@@ -1,0 +1,46 @@
+# [DiscordMusicBot](https://github.com/Marc0Franc0/DiscordMusicBot#discrodmusicbot)
+
+Bot para Discord para gestionar comandos y ofrecer la funcionalidad de reproducir canciones dentro de servidores de Discord
+
+## Características
+- Integración con JDA:
+  Utilización de la biblioteca Java Discord API (JDA) para la gestión de interacciones y eventos en Discord. 
+- Despliegue en Servidor Discord:
+Preparación del bot para ser desplegado en servidores de Discord y responder a interacciones de usuarios.
+
+## Tecnologías
+- Spring Boot 3.3.1
+- Java 21
+- JDA
+- Maven
+## Comandos Disponibles
+Utilice estos comandos en un canal de texto de Discord
+### Comando `/help`
+
+Proporciona ayuda sobre los comandos disponibles.
+## Instalación y configuración
+1. Clonar repositorio
+```shell
+git clone https://github.com/Marc0Franc0/DiscordMusicBot
+```
+2. Configura el token del bot en el [archivo de configuración](https://github.com/Marc0Franc0/DiscordMusicBot/blob/main/src/main/resources/application.properties):
+- Modifica el valor de ${TOKEN_BOT} con el application id de tu bot
+3. Seguir pasos para ejecución con Maven
+
+## Ejecución con Maven
+
+Para construir y ejecutar la aplicación necesita:
+
+- [JDK 21+](https://www.oracle.com/java/technologies/downloads/#java21)
+- [Maven 3+](https://maven.apache.org)
+
+Ejecutar localmente
+1. Instala las dependencias
+```shell
+cd DiscordMusicBot
+mvn clean install
+```
+2. Inicia la app
+```shell
+mvn spring-boot:run
+```
