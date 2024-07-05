@@ -1,4 +1,4 @@
-package com.marco.DiscordMusicBot.configuration;
+package com.marco.DiscordMusicBot.commands;
 
 import com.marco.DiscordMusicBot.service.CommandService;
 import net.dv8tion.jda.api.entities.Guild;
@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
-import com.marco.DiscordMusicBot.model.Command;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.List;
@@ -16,10 +15,10 @@ import java.util.List;
 public class CommandManager extends ListenerAdapter {
     @Autowired
     private final CommandService commandService;
-    private final List<Command> commands;
+    private final List<ICommand> commands;
 
     // Constructor para inicializar la lista de comandos
-    public CommandManager(List<Command> commands, CommandService commandService) {
+    public CommandManager(List<ICommand> commands, CommandService commandService) {
         this.commandService = commandService;
         this.commands = commands;
     }
@@ -37,7 +36,8 @@ public class CommandManager extends ListenerAdapter {
         // Itera sobre todos los comandos definidos y ejecuta el comando correspondiente
         commands.forEach(command -> {
             if (command.getName().equals(event.getName())) {
-                commandService.selectExecute(event);
+                //se ejecutaa el comando
+                command.execute(commandService,event);
             }
         });
     }
@@ -54,7 +54,7 @@ public class CommandManager extends ListenerAdapter {
         // Itera sobre cada servidor en la lista
         for (Guild guild : guilds) {
             // Itera sobre cada comando definido
-            for (Command command : commands) {
+            for (ICommand command : commands) {
                 // Si el comando no tiene opciones, lo registra sin opciones
                 if (command.getOptions() == null) {
                     guild.upsertCommand(command.getName(), command.getDescription()).queue();

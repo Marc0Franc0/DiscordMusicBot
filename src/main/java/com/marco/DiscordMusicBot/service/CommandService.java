@@ -6,5 +6,4 @@ import org.springframework.stereotype.Service;
 @Service
 public interface CommandService {
     String selectExecute(SlashCommandInteractionEvent event);
-    String executeHelpCommand(SlashCommandInteractionEvent event);
 }

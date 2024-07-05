@@ -3,6 +3,8 @@ package com.marco.DiscordMusicBot;
 
 import com.marco.DiscordMusicBot.service.CommandService;
 import com.marco.DiscordMusicBot.service.CommandServiceImpl;
+import com.marco.DiscordMusicBot.service.help.HelpService;
+import com.marco.DiscordMusicBot.service.help.HelpServiceImpl;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class CommandServiceTest {
+public class HelpServiceTest {
 
 
     @Test
@@ -32,9 +34,10 @@ public class CommandServiceTest {
         ReplyCallbackAction replyUnexpectedEvent = mock(ReplyCallbackAction.class);
         //properties
         when(unexpectedEvent.getName()).thenReturn("unknown");
-
+        //objeto HelpService
+        HelpService helpService = new HelpServiceImpl();
         // Objeto CommandService
-        CommandService commandService = new CommandServiceImpl();
+        CommandService commandService = new CommandServiceImpl(helpService);
 
         // Ejecución de el método selectExecute con el evento "ideal"
         String resultIdealEvent = commandService.selectExecute(idealEvent);
