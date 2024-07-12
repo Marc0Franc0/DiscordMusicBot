@@ -7,7 +7,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.jetbrains.annotations.NotNull;
-import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 @UtilityClass
 @Slf4j
@@ -67,15 +67,17 @@ public class EmbedUtil {
      * @return An EmbedBuilder with the current queue information.
      * @throws RuntimeException If an unexpected error occurs while building the response.
      */
-    public EmbedBuilder buildMusicInfo(@NotNull List<AudioTrack> queue) {
+    public EmbedBuilder buildMusicInfo(@NotNull BlockingQueue<AudioTrack> queue) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         try {
             embedBuilder.setTitle("Current Queue:");
             if (queue.isEmpty()) {
                 embedBuilder.setDescription("Queue is empty.");
             }
-            queue.forEach(audioTrack ->
-                    embedBuilder.addField(1 + 1 + ":", audioTrack.getInfo().title, false));
+
+            queue.forEach(audioTrack ->{
+                    embedBuilder.addField("",audioTrack.getInfo().title, false);
+            });
         } catch (Exception e) {
             embedBuilder.setTitle("Error");
             embedBuilder.setDescription("An unexpected error occurred");

@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 @Getter
 public class GuildMusicManager {
 
+    private final AudioPlayer audioPlayer;
     private final TrackScheduler trackScheduler;
     private final AudioForwarder audioForwarder;
-    private final AudioPlayer audioPlayer;
 
     /**
      * Constructs a GuildMusicManager with the specified AudioPlayer.
@@ -24,8 +24,7 @@ public class GuildMusicManager {
     @Autowired
     public GuildMusicManager(AudioPlayer audioPlayer) {
         this.audioPlayer = audioPlayer;
-        trackScheduler = new TrackScheduler();
-        audioPlayer.addListener(trackScheduler);
-        audioForwarder = new AudioForwarder(audioPlayer);
+        this.trackScheduler = new TrackScheduler(audioPlayer);
+        this.audioForwarder = new AudioForwarder(audioPlayer);
     }
 }

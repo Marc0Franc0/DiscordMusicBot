@@ -12,75 +12,91 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Manages the queue and playback of audio tracks in a Discord bot.
+ * This class is responsible for scheduling tracks for playback and handling various track events.
  */
-@Getter
 @Slf4j
 @Component
 public class TrackScheduler extends AudioEventAdapter {
 
-    private final BlockingQueue<AudioTrack> queue = new LinkedBlockingQueue<>();
+    private final AudioPlayer player;
+    @Getter
+    private final BlockingQueue<AudioTrack> queue;
     private final boolean isRepeat;
 
-    public TrackScheduler() {
+    /**
+     * Constructs a new TrackScheduler with the given audio player.
+     *
+     * @param player The audio player this scheduler will manage.
+     */
+    public TrackScheduler(AudioPlayer player) {
+        this.player = player;
+        this.queue = new LinkedBlockingQueue<>();
         this.isRepeat = false;
     }
 
     /**
-     * Handles the event when a track starts playing.
+     * Called when a track starts playing.
      *
      * @param player The audio player.
      * @param track  The track that started playing.
      */
     @Override
     public void onTrackStart(AudioPlayer player, AudioTrack track) {
-        // Attempts to play the track; if unable, adds the track to the queue
-        if (!player.startTrack(track, true)) {
-            queue.offer(track); // Adds the track to the playback queue
-        }
+        log.info("Track started: {} - {}", track.getInfo().title, track.getInfo().author);
     }
 
     /**
-     * Handles the event when a track ends.
+     * Called when a track ends.
      *
      * @param player    The audio player.
      * @param track     The track that ended.
-     * @param endReason The reason why the track ended.
+     * @param endReason The reason the track ended.
      */
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
-        // If repeat mode is enabled, replays the same track
         if (isRepeat) {
-            player.startTrack(track.makeClone(), false); // Clones and replays the track
+            player.startTrack(track.makeClone(), false);
         } else {
-            // If not repeating, plays the next track in the queue
-            player.startTrack(queue.poll(), false); // Retrieves and plays the next track in the queue
+            AudioTrack nextTrack = queue.poll();
+            if (nextTrack != null) {
+                player.startTrack(nextTrack, false);
+            }
         }
     }
 
     /**
-     * Handles the event when a track throws an exception during playback.
+     * Called when a track throws an exception during playback.
      *
      * @param player    The audio player.
      * @param track     The track that encountered the exception.
-     * @param exception The exception that occurred.
+     * @param exception The exception that was thrown.
      */
     @Override
     public void onTrackException(AudioPlayer player, AudioTrack track, FriendlyException exception) {
-        //exceptions thrown by a track
-        log.error("Track exception in audio player: {}", exception.getMessage(), exception);
+        log.error("Track exception: {} - {}", track.getInfo().title, exception.getMessage(), exception);
     }
 
     /**
-     * Handles the event when a track gets stuck and is unable to provide audio.
+     * Called when a track gets stuck.
      *
-     * @param player     The audio player.
-     * @param track      The track that got stuck.
-     * @param thresholdMs The threshold in milliseconds for track being stuck.
+     * @param player      The audio player.
+     * @param track       The track that got stuck.
+     * @param thresholdMs The threshold time in milliseconds for the track being stuck.
      */
     @Override
     public void onTrackStuck(AudioPlayer player, AudioTrack track, long thresholdMs) {
-        // Handles tracks that are stuck and unable to provide audio
-        log.warn("Track stuck in audio player. Threshold: {}ms", thresholdMs);
+        log.warn("Track stuck: {} - Threshold: {}ms", track.getInfo().title, thresholdMs);
+        player.startTrack(queue.poll(), false);
+    }
+
+    /**
+     * Adds a track to the queue or starts playing it if the player is not currently playing a track.
+     *
+     * @param track The track to be queued or played.
+     */
+    public void queue(AudioTrack track) {
+        if (!player.startTrack(track, true)) {
+            queue.offer(track);
+        }
     }
 }

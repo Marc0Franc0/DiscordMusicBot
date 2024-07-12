@@ -1,12 +1,12 @@
 package com.marco.DiscordMusicBot.configuration.music.lavaplayer;
 
-import com.marco.DiscordMusicBot.model.music.PlaylistMusicInfo;
 import com.marco.DiscordMusicBot.model.music.SingleMusicInfo;
 import com.marco.DiscordMusicBot.util.EmbedUtil;
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerRegistry;
 import com.sedmelluq.discord.lavaplayer.format.StandardAudioDataFormats;
 import com.sedmelluq.discord.lavaplayer.player.AudioConfiguration;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.getyarn.GetyarnAudioSourceManager;
@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
@@ -45,17 +44,14 @@ public class PlayerManager {
 
     private final Map<Long, GuildMusicManager> guildMusicManagers;
     private final AudioPlayerManager audioPlayerManager;
-    private final GuildMusicManager musicManager;
 
     /**
      * Constructs a PlayerManager with necessary dependencies.
      *
-     * @param musicManager    Manager for guild-specific music playback.
      * @param audioPlayerManager Manager for audio playback and source loading.
      */
     @Autowired
-    public PlayerManager(GuildMusicManager musicManager, AudioPlayerManager audioPlayerManager) {
-        this.musicManager = musicManager;
+    public PlayerManager(AudioPlayerManager audioPlayerManager) {
         this.audioPlayerManager = audioPlayerManager;
 
         // Initialize guild music managers map
@@ -74,11 +70,13 @@ public class PlayerManager {
      * @param guild The guild for which to retrieve the music manager.
      * @return The GuildMusicManager instance associated with the guild.
      */
-    public GuildMusicManager getGuildMusicManager(@NotNull Guild guild) {
-        return guildMusicManagers.computeIfAbsent(guild.getIdLong(), (guildId) -> {
-            // Set sending handler for guild audio manager
-            guild.getAudioManager().setSendingHandler(musicManager.getAudioForwarder());
-            return musicManager;
+    public GuildMusicManager getGuildMusicManager(Guild guild) {
+        return guildMusicManagers.computeIfAbsent(guild.getIdLong(), guildId -> {
+            AudioPlayer player = audioPlayerManager.createPlayer();
+            GuildMusicManager guildMusicManager = new GuildMusicManager(player);
+            player.addListener(guildMusicManager.getTrackScheduler());
+            guild.getAudioManager().setSendingHandler(guildMusicManager.getAudioForwarder());
+            return guildMusicManager;
         });
     }
 
@@ -89,34 +87,18 @@ public class PlayerManager {
      * @param trackURL The URL of the track or playlist to load.
      */
     public void loadAndPlay(SlashCommandInteractionEvent event, String trackURL) {
-        GuildMusicManager guildMusicManager =
-                getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"));
-
+        GuildMusicManager guildMusicManager = getGuildMusicManager(Objects.requireNonNull(event.getGuild(), "Guild cannot be null"));
         audioPlayerManager.loadItemOrdered(guildMusicManager, trackURL, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                // Play or enqueue the loaded track
-                guildMusicManager.getTrackScheduler().onTrackStart(guildMusicManager.getAudioPlayer(), track);
-
-                // Build and send embed message with track information
-                AudioTrackInfo trackInfo = track.getInfo();
-                EmbedBuilder embedBuilder = EmbedUtil.buildMusicInfo(new SingleMusicInfo(trackInfo.title, trackInfo.author, trackInfo.uri));
-                event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
+                play(event, guildMusicManager, track);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                // Play or enqueue tracks from the loaded playlist
-                playlist.getTracks().forEach(track ->
-                        guildMusicManager.getTrackScheduler().onTrackStart(guildMusicManager.getAudioPlayer(), track));
-
-                // Build and send embed message with playlist information
-                String playlistTitle = playlist.getName();
-                String playlistAuthor = playlist.getTracks().getFirst().getInfo().author;
-                int playlistSize = playlist.getTracks().size();
-                PlaylistMusicInfo playlistInfo = new PlaylistMusicInfo(playlistTitle, playlistAuthor, playlistSize);
-                EmbedBuilder embedBuilder = EmbedUtil.buildMusicInfo(playlistInfo);
-                event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
+                for (AudioTrack track : playlist.getTracks()) {
+                    play(event, guildMusicManager, track);
+                }
             }
 
             @Override
@@ -129,6 +111,25 @@ public class PlayerManager {
                 event.getHook().editOriginal("Failed to load the track.").queue();
             }
         });
+    }
+
+    /**
+     * Plays or queues a track in the specified guild's music manager.
+     *
+     * @param event              The SlashCommandInteractionEvent triggering the command.
+     * @param guildMusicManager  The GuildMusicManager instance for the guild.
+     * @param track              The AudioTrack to play or queue.
+     */
+    private void play(SlashCommandInteractionEvent event, GuildMusicManager guildMusicManager, AudioTrack track) {
+        TrackScheduler trackScheduler = guildMusicManager.getTrackScheduler();
+        trackScheduler.queue(track);
+        if (guildMusicManager.getAudioPlayer().getPlayingTrack() == null) {
+            guildMusicManager.getAudioPlayer().startTrack(track, false);
+        }
+
+        AudioTrackInfo trackInfo = track.getInfo();
+        EmbedBuilder embedBuilder = EmbedUtil.buildMusicInfo(new SingleMusicInfo(trackInfo.title, trackInfo.author, trackInfo.uri));
+        event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
     }
 
     // Private methods
@@ -164,5 +165,3 @@ public class PlayerManager {
         AudioSourceManagers.registerLocalSource(audioPlayerManager);
     }
 }
-
-
