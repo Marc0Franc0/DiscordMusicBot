@@ -10,7 +10,7 @@ public interface ICommand {
     String getName();
     String getDescription();
     List<OptionData> getOptions();
-    default void execute(@NotNull CommandService commandService, SlashCommandInteractionEvent event){
-    commandService.selectExecute(event);
+    default String execute(@NotNull CommandService commandService, SlashCommandInteractionEvent event){
+    return commandService.selectExecute(event);
     }
 }

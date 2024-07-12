@@ -1,6 +1,7 @@
 package com.marco.DiscordMusicBot.commands;
 
 import com.marco.DiscordMusicBot.service.CommandService;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -11,56 +12,77 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.List;
 
+/**
+ * Manages and handles bot commands and interactions.
+ */
 @Component
+@Slf4j
 public class CommandManager extends ListenerAdapter {
-    @Autowired
+
     private final CommandService commandService;
     private final List<ICommand> commands;
 
-    // Constructor para inicializar la lista de comandos
+    /**
+     * Constructs a CommandManager instance with the necessary dependencies.
+     *
+     * @param commands       The list of bot commands to manage.
+     * @param commandService The service responsible for executing bot commands.
+     */
+    @Autowired
     public CommandManager(List<ICommand> commands, CommandService commandService) {
-        this.commandService = commandService;
         this.commands = commands;
+        this.commandService = commandService;
     }
 
-    // Método que se ejecuta cuando el bot está completamente listo
+    /**
+     * Initializes commands when the bot is fully initialized and ready to operate.
+     *
+     * @param event The event triggered when the bot is ready.
+     */
     @Override
     public void onReady(@NotNull ReadyEvent event) {
-        // Registra los comandos en todos los servidores a los que el bot tiene acceso al inicio
         registerCommands(event.getJDA().getGuilds());
     }
 
-    // Método que se ejecuta cuando se recibe una interacción de comando tipo "slash" -> /
+    /**
+     * Handles slash command interactions received by the bot.
+     *
+     * @param event The event triggered when a slash command interaction occurs.
+     */
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
-        // Itera sobre todos los comandos definidos y ejecuta el comando correspondiente
         commands.forEach(command -> {
             if (command.getName().equals(event.getName())) {
-                //se ejecutaa el comando
-                command.execute(commandService,event);
+                String executionResult = command.execute(commandService, event);
+                log.info("Command execution: {}", executionResult);
             }
         });
     }
 
-    // Método que se ejecuta cuando el bot se une a un nuevo servidor
+    /**
+     * Handles guild join events when the bot joins a new server.
+     *
+     * @param event The event triggered when the bot joins a new guild.
+     */
     @Override
     public void onGuildJoin(@NotNull GuildJoinEvent event) {
-        // Registra los comandos en el nuevo servidor
         registerCommands(List.of(event.getGuild()));
     }
 
-    // Método para registrar los comandos en una lista de servidores
+    /**
+     * Registers commands in the specified list of guilds.
+     *
+     * @param guilds The list of guilds where commands need to be registered.
+     */
     private void registerCommands(List<Guild> guilds) {
-        // Itera sobre cada servidor en la lista
         for (Guild guild : guilds) {
-            // Itera sobre cada comando definido
             for (ICommand command : commands) {
-                // Si el comando no tiene opciones, lo registra sin opciones
                 if (command.getOptions() == null) {
                     guild.upsertCommand(command.getName(), command.getDescription()).queue();
                 } else {
-                    // Si el comando tiene opciones, lo registra con las opciones
-                    guild.upsertCommand(command.getName(), command.getDescription()).addOptions(command.getOptions()).queue();
+                    guild.upsertCommand(command.getName(), command.getDescription())
+                            .addOptions(command.getOptions())
+                            .queue();
                 }
             }
         }

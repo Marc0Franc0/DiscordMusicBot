@@ -1,25 +1,29 @@
-package com.marco.DiscordMusicBot.commands.help;
+package com.marco.DiscordMusicBot.commands.music;
 
 import com.marco.DiscordMusicBot.commands.ICommand;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents a command to provide descriptions of available commands.
+ * Represents a command to play a song with specific options.
  */
-public class HelpCommand implements ICommand {
+public class PlayCommand implements ICommand {
     private final String name;
     private final String description;
     private final List<OptionData> options;
 
     /**
-     * Constructs a new HelpCommand with default values.
+     * Constructs a new PlayCommand with default values.
      */
-    public HelpCommand() {
-        this.name = "help";
-        this.description = "Description of commands to use";
+    public PlayCommand() {
+        this.name = "play";
+        this.description = "Play a song";
         this.options = new ArrayList<>();
+
+        // Define the option for song link
+        options.add(new OptionData(OptionType.STRING, "link", "Link of the song to play.", true));
     }
 
     /**
@@ -52,4 +56,3 @@ public class HelpCommand implements ICommand {
         return this.options;
     }
 }
-
