@@ -1,5 +1,6 @@
 package com.marco.DiscordMusicBot.configuration.music.lavaplayer;
 
+import com.marco.DiscordMusicBot.model.music.PlaylistMusicInfo;
 import com.marco.DiscordMusicBot.model.music.SingleMusicInfo;
 import com.marco.DiscordMusicBot.util.EmbedUtil;
 import com.sedmelluq.discord.lavaplayer.container.MediaContainerRegistry;
@@ -32,6 +33,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -91,13 +93,22 @@ public class PlayerManager {
         audioPlayerManager.loadItemOrdered(guildMusicManager, trackURL, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                play(event, guildMusicManager, track);
+                AudioTrackInfo trackInfo = track.getInfo();
+                EmbedBuilder embedBuilder = EmbedUtil.buildMusicInfo(new SingleMusicInfo(trackInfo.title, trackInfo.author, trackInfo.uri));
+                event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
+                play(guildMusicManager, track);
             }
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
+                List<AudioTrack> audioTrackList = playlist.getTracks();
                 for (AudioTrack track : playlist.getTracks()) {
-                    play(event, guildMusicManager, track);
+                    EmbedBuilder embedBuilder = EmbedUtil
+                            .buildMusicInfo
+                                    (new PlaylistMusicInfo
+                                            (playlist.getName(), audioTrackList.getFirst().getInfo().author, audioTrackList.size()));
+                    event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
+                    play(guildMusicManager, track);
                 }
             }
 
@@ -116,20 +127,15 @@ public class PlayerManager {
     /**
      * Plays or queues a track in the specified guild's music manager.
      *
-     * @param event              The SlashCommandInteractionEvent triggering the command.
      * @param guildMusicManager  The GuildMusicManager instance for the guild.
      * @param track              The AudioTrack to play or queue.
      */
-    private void play(SlashCommandInteractionEvent event, GuildMusicManager guildMusicManager, AudioTrack track) {
+    private void play(GuildMusicManager guildMusicManager, AudioTrack track) {
         TrackScheduler trackScheduler = guildMusicManager.getTrackScheduler();
         trackScheduler.queue(track);
         if (guildMusicManager.getAudioPlayer().getPlayingTrack() == null) {
             guildMusicManager.getAudioPlayer().startTrack(track, false);
         }
-
-        AudioTrackInfo trackInfo = track.getInfo();
-        EmbedBuilder embedBuilder = EmbedUtil.buildMusicInfo(new SingleMusicInfo(trackInfo.title, trackInfo.author, trackInfo.uri));
-        event.getHook().editOriginalEmbeds(embedBuilder.build()).queue();
     }
 
     // Private methods

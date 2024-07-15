@@ -12,19 +12,26 @@ Preparación del bot para ser desplegado en servidores de Discord y responder a 
 - Spring Boot 3.3.1
 - Java 21
 - JDA
+- Lavaplayer
 - Maven
 ## Comandos Disponibles
 Utilice estos comandos en un canal de texto de Discord
-### Comando `/help`
+### `/help`
 
 Proporciona ayuda sobre los comandos disponibles.
+### `/play`
+
+Reproduce una canción en un canal de voz.
+### `/queue`
+
+Muestra la lista de canciones que están en la cola de reproducción.
 ## Instalación y configuración
 1. Clonar repositorio
 ```shell
 git clone https://github.com/Marc0Franc0/DiscordMusicBot
 ```
 2. Configura el token del bot en el [archivo de configuración](https://github.com/Marc0Franc0/DiscordMusicBot/blob/main/src/main/resources/application.properties):
-- Modifica el valor de ${TOKEN_BOT} con el application id de tu bot
+- Modifica el valor de ${BOT_TOKEN}
 3. Seguir pasos para ejecución con Maven
 
 ## Ejecución con Maven
