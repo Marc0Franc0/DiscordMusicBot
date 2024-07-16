@@ -4,6 +4,7 @@ import com.marco.DiscordMusicBot.commands.ICommand;
 import com.marco.DiscordMusicBot.commands.music.PauseCommand;
 import com.marco.DiscordMusicBot.commands.music.PlayCommand;
 import com.marco.DiscordMusicBot.commands.music.QueueCommand;
+import com.marco.DiscordMusicBot.commands.music.ResumeCommand;
 import com.marco.DiscordMusicBot.configuration.music.lavaplayer.PlayerManager;
 import com.marco.DiscordMusicBot.service.CommandService;
 import com.marco.DiscordMusicBot.service.help.HelpService;
@@ -96,6 +97,25 @@ public class MusicServiceTest {
         verify(mockEvent, times(1)).getName();
         verify(mockEvent, times(1)).reply("Pause playback");
     }
+    @Test
+    public void testExecuteResumeCommandWithoutMocks() {
+        // Configuración de mocks
+        SlashCommandInteractionEvent mockEvent = createMockSlashCommandInteractionEvent(new ResumeCommand());
+
+        // Configurar comportamiento para los componentes de audio
+        configureAudioComponents(mockEvent);
+
+        // Método selectExecute con el evento simulado
+        String result = commandService.selectExecute(mockEvent);
+
+        // Verificación
+        assertNotNull(result, "Expected non-null response");
+        assertEquals("Resume command executed successfully", result);
+
+        // Verificar interacciones con los mocks
+        verify(mockEvent, times(1)).getName();
+        verify(mockEvent, times(1)).reply("Resume playback");
+    }
 
     private CommandService createCommandService() {
         HelpService helpService = new HelpService();
@@ -122,7 +142,7 @@ public class MusicServiceTest {
                 when(mockEvent.replyEmbeds(any(MessageEmbed.class))).thenReturn(replyAction);
                 doNothing().when(replyAction).queue();
             }
-            case "pause" -> {
+            case "pause","resume" -> {
                 when(mockEvent.getName()).thenReturn(command.getName());
                 when(mockEvent.reply(anyString())).thenReturn(replyAction);
                 doNothing().when(replyAction).queue();

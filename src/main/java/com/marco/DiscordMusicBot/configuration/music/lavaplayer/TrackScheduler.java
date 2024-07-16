@@ -114,4 +114,17 @@ public class TrackScheduler extends AudioEventAdapter {
             player.setPaused(true);
         }
     }
+    /**
+     * Resumes the playback of the current track.
+     * <p>
+     * This method checks if the player is currently paused. If the player is
+     * paused, it sets the player's state to not paused. If the player is already
+     * playing, this method does nothing.
+     * </p>
+     */
+    public void resumePlayback() {
+        if (player.isPaused()) {
+            player.setPaused(false);
+        }
+    }
 }

@@ -49,6 +49,7 @@ public class BotConfiguration{
         commandList.add(new PlayCommand());     // Add PlayCommand to the command list
         commandList.add(new QueueCommand());    // Add QueueCommand to the command list
         commandList.add(new PauseCommand());    //Add PauseCommand
+        commandList.add(new ResumeCommand());   //Add ResumeCommand
         return commandList;
     }
 }

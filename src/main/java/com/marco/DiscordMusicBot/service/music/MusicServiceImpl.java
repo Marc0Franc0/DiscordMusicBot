@@ -133,6 +133,46 @@ public class MusicServiceImpl implements MusicService {
         }
         return rtMethod;
     }
+    /**
+     * Executes the resume command to resume the playback in the guild associated with the given event.
+     * <p>
+     * This method performs the following steps:
+     * <ul>
+     *   <li>Verifies the event using {@link #verifyEvent(SlashCommandInteractionEvent)}.</li>
+     *   <li>Resumes the playback using the {@link PlayerManager#resumePlayback(SlashCommandInteractionEvent)} method.</li>
+     *   <li>Replies to the event with a confirmation message.</li>
+     * </ul>
+     * If an exception occurs during execution, an error message is logged, a reply is sent to the event,
+     * and a {@link RuntimeException} is thrown.
+     * </p>
+     *
+     * @param event the {@link SlashCommandInteractionEvent} that triggered the resume command.
+     * @return a string indicating the result of the command execution.
+     * @throws RuntimeException if an unexpected error occurs during the execution of the command.
+     */
+    @Override
+    public String executeResumeCommand(SlashCommandInteractionEvent event) {
+        String rtMethod;
+        try {
+            // Verificaciones
+            verifyEvent(event);
+
+            //Reanuda la reproducción
+            playerManager.resumePlayback(event);
+
+            // Se muestra una respuesta
+            event.reply("Resume playback").queue();
+            rtMethod = "Resume command executed successfully";
+            log.info(rtMethod);
+
+        } catch (Exception e) {
+            rtMethod = "Error in executeResumeCommand";
+            log.error(rtMethod, e.getMessage());
+            event.reply("An unexpected error occurred").queue();
+            throw new RuntimeException(e.getMessage());
+        }
+        return rtMethod;
+    }
 
     /**
      * Verifies the validity of the given {@link SlashCommandInteractionEvent}.

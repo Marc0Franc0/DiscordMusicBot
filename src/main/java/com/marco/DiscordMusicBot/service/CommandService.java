@@ -34,6 +34,7 @@ public class CommandService{
             case "play" -> returnSrt = musicService.executePlayCommand(event);
             case "queue" -> returnSrt = musicService.executeQueueCommand(event);
             case "pause" -> returnSrt = musicService.executePauseCommand(event);
+            case "resume" -> returnSrt = musicService.executeResumeCommand(event);
             default -> returnSrt = "Unknown command";
         }
         return returnSrt;

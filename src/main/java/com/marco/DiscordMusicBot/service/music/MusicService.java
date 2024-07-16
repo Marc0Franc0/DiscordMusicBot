@@ -8,4 +8,5 @@ public interface MusicService {
     String executePlayCommand(SlashCommandInteractionEvent event);
     String executeQueueCommand(SlashCommandInteractionEvent event);
     String executePauseCommand(SlashCommandInteractionEvent event);
+    String executeResumeCommand(SlashCommandInteractionEvent event);
 }
