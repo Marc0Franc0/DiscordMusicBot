@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Manages audio playback and guild-specific music managers in a Discord bot.
@@ -72,7 +73,7 @@ public class PlayerManager {
      * @param guild The guild for which to retrieve the music manager.
      * @return The GuildMusicManager instance associated with the guild.
      */
-    public GuildMusicManager getGuildMusicManager(Guild guild) {
+    private GuildMusicManager getGuildMusicManager(Guild guild) {
         return guildMusicManagers.computeIfAbsent(guild.getIdLong(), guildId -> {
             AudioPlayer player = audioPlayerManager.createPlayer();
             GuildMusicManager guildMusicManager = new GuildMusicManager(player);
@@ -123,7 +124,12 @@ public class PlayerManager {
             }
         });
     }
-
+    public BlockingQueue<AudioTrack> getQueue(SlashCommandInteractionEvent event){
+        //Se obtiene la cola
+        return getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
+                .getTrackScheduler()
+                .getQueue();
+    }
     /**
      * Plays or queues a track in the specified guild's music manager.
      *
@@ -137,8 +143,6 @@ public class PlayerManager {
             guildMusicManager.getAudioPlayer().startTrack(track, false);
         }
     }
-
-    // Private methods
 
     /**
      * Initializes and registers audio source managers for various sources like YouTube, SoundCloud, etc.

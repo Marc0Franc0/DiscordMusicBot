@@ -1,6 +1,5 @@
 package com.marco.DiscordMusicBot.service.music;
 
-import com.marco.DiscordMusicBot.configuration.music.lavaplayer.GuildMusicManager;
 import com.marco.DiscordMusicBot.configuration.music.lavaplayer.PlayerManager;
 import com.marco.DiscordMusicBot.util.DiscordUtil;
 import com.marco.DiscordMusicBot.util.EmbedUtil;
@@ -75,14 +74,10 @@ public class MusicServiceImpl implements MusicService {
         String rtMethod = "Empty response";
         try {
             // Verificaciones
-           verifyEvent(event);
+            verifyEvent(event);
 
             // Se obtiene la cola de reproducción y se construye una respuesta
-            GuildMusicManager guildMusicManager =
-                    playerManager
-                            .getGuildMusicManager
-                                    (Objects.requireNonNull(event.getGuild(),"Guild cannot be null"));
-            BlockingQueue<AudioTrack> queue = guildMusicManager.getTrackScheduler().getQueue();
+            BlockingQueue<AudioTrack> queue = playerManager.getQueue(event);
             EmbedBuilder embedBuilder = EmbedUtil.buildMusicInfo(queue);
 
             // Se muestra una respuesta
