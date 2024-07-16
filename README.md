@@ -25,6 +25,12 @@ Reproduce una canción en un canal de voz.
 ### `/queue`
 
 Muestra la lista de canciones que están en la cola de reproducción.
+### `/pause`
+
+Pausa la reproducción de lo que se este escuchando.
+### `/resume`
+
+Reanuda la reproducción y sigue desde donde fue pausado.
 ## Instalación y configuración
 1. Clonar repositorio
 ```shell

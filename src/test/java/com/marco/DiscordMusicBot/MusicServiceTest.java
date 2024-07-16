@@ -29,6 +29,9 @@ import static org.mockito.Mockito.*;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @ExtendWith(MockitoExtension.class)
 public class MusicServiceTest {
 
@@ -118,7 +121,8 @@ public class MusicServiceTest {
     }
 
     private CommandService createCommandService() {
-        HelpService helpService = new HelpService();
+        List<ICommand> commandList = new ArrayList<>();
+        HelpService helpService = new HelpService(commandList);
         AudioPlayerManager audioPlayerManager = new DefaultAudioPlayerManager();
         PlayerManager playerManager = new PlayerManager(audioPlayerManager);
         MusicService musicService = new MusicServiceImpl(playerManager);

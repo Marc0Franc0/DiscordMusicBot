@@ -20,11 +20,24 @@ import java.util.List;
 public class BotConfiguration{
     @Value("${bot.token}")
     private String botToken;
-    private final CommandManager commandManager;
+
+    private final CommandService commandService;
     @Autowired
-    public BotConfiguration(CommandService commandService){
-        List<ICommand> commandList = initializeCommands();
-        this.commandManager = new CommandManager(commandList,commandService);
+    public BotConfiguration(CommandService commandService) {
+        this.commandService = commandService;
+    }
+    /**
+     * Configures the {@link CommandManager} bean for managing bot commands.
+     * <p>
+     * This method initializes a new {@link CommandManager} instance with the list of initialized commands
+     * obtained from {@link #initializeCommands()} and the {@link CommandService} for executing bot commands.
+     * </p>
+     *
+     * @return a {@link CommandManager} instance configured with the list of bot commands and {@link CommandService}.
+     */
+    @Bean
+    public CommandManager commandManager() {
+        return new CommandManager(initializeCommands(), commandService);
     }
     /**
      * Configures and initializes the JDA instance for the Discord bot.
@@ -34,7 +47,7 @@ public class BotConfiguration{
     @Bean
     public JDA jda(){
         return JDABuilder.createDefault(botToken)
-                .addEventListeners(commandManager)
+                .addEventListeners(commandManager())
                 .build();
     }
 
@@ -44,6 +57,8 @@ public class BotConfiguration{
      * @return The list of initialized bot commands.
      */
     private List<ICommand> initializeCommands() {
+    @Bean
+    public List<ICommand> initializeCommands() {
         List<ICommand> commandList = new ArrayList<>();
         commandList.add(new HelpCommand());     // Add HelpCommand to the command list
         commandList.add(new PlayCommand());     // Add PlayCommand to the command list
