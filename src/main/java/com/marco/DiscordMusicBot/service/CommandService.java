@@ -33,6 +33,7 @@ public class CommandService{
             case "help" -> returnSrt = helpService.executeHelpCommand(event);
             case "play" -> returnSrt = musicService.executePlayCommand(event);
             case "queue" -> returnSrt = musicService.executeQueueCommand(event);
+            case "pause" -> returnSrt = musicService.executePauseCommand(event);
             default -> returnSrt = "Unknown command";
         }
         return returnSrt;

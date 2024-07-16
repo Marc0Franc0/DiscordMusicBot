@@ -6,6 +6,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -97,6 +98,20 @@ public class TrackScheduler extends AudioEventAdapter {
     public void queue(AudioTrack track) {
         if (!player.startTrack(track, true)) {
             queue.offer(track);
+        }
+    }
+
+    /**
+     * Pauses the playback of the current track.
+     * <p>
+     * This method checks if the player is currently not paused. If the player is
+     * not paused, it sets the player's state to paused. If the player is already
+     * paused, this method does nothing.
+     * </p>
+     */
+    public void pausePlayback() {
+        if (!player.isPaused()) {
+            player.setPaused(true);
         }
     }
 }

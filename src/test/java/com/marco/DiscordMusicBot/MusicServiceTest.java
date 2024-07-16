@@ -1,6 +1,7 @@
 package com.marco.DiscordMusicBot;
 
 import com.marco.DiscordMusicBot.commands.ICommand;
+import com.marco.DiscordMusicBot.commands.music.PauseCommand;
 import com.marco.DiscordMusicBot.commands.music.PlayCommand;
 import com.marco.DiscordMusicBot.commands.music.QueueCommand;
 import com.marco.DiscordMusicBot.configuration.music.lavaplayer.PlayerManager;
@@ -76,6 +77,25 @@ public class MusicServiceTest {
         verify(mockEvent, times(1)).getName();
         verify(mockEvent, times(1)).replyEmbeds(any(MessageEmbed.class));
     }
+    @Test
+    public void testExecutePauseCommandWithoutMocks() {
+        // Configuración de mocks
+        SlashCommandInteractionEvent mockEvent = createMockSlashCommandInteractionEvent(new PauseCommand());
+
+        // Configurar comportamiento para los componentes de audio
+        configureAudioComponents(mockEvent);
+
+        // Método selectExecute con el evento simulado
+        String result = commandService.selectExecute(mockEvent);
+
+        // Verificación
+        assertNotNull(result, "Expected non-null response");
+        assertEquals("Pause command executed successfully", result);
+
+        // Verificar interacciones con los mocks
+        verify(mockEvent, times(1)).getName();
+        verify(mockEvent, times(1)).reply("Pause playback");
+    }
 
     private CommandService createCommandService() {
         HelpService helpService = new HelpService();
@@ -102,6 +122,12 @@ public class MusicServiceTest {
                 when(mockEvent.replyEmbeds(any(MessageEmbed.class))).thenReturn(replyAction);
                 doNothing().when(replyAction).queue();
             }
+            case "pause" -> {
+                when(mockEvent.getName()).thenReturn(command.getName());
+                when(mockEvent.reply(anyString())).thenReturn(replyAction);
+                doNothing().when(replyAction).queue();
+            }
+
         }
 
         return mockEvent;

@@ -3,8 +3,7 @@ package com.marco.DiscordMusicBot.configuration;
 import com.marco.DiscordMusicBot.commands.ICommand;
 import com.marco.DiscordMusicBot.commands.CommandManager;
 import com.marco.DiscordMusicBot.commands.help.HelpCommand;
-import com.marco.DiscordMusicBot.commands.music.PlayCommand;
-import com.marco.DiscordMusicBot.commands.music.QueueCommand;
+import com.marco.DiscordMusicBot.commands.music.*;
 import com.marco.DiscordMusicBot.service.CommandService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
@@ -46,9 +45,10 @@ public class BotConfiguration{
      */
     private List<ICommand> initializeCommands() {
         List<ICommand> commandList = new ArrayList<>();
-        commandList.add(new HelpCommand());   // Add HelpCommand to the command list
-        commandList.add(new PlayCommand());   // Add PlayCommand to the command list
-        commandList.add(new QueueCommand());  // Add QueueCommand to the command list
+        commandList.add(new HelpCommand());     // Add HelpCommand to the command list
+        commandList.add(new PlayCommand());     // Add PlayCommand to the command list
+        commandList.add(new QueueCommand());    // Add QueueCommand to the command list
+        commandList.add(new PauseCommand());    //Add PauseCommand
         return commandList;
     }
 }

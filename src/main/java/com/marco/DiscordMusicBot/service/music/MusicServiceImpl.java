@@ -93,6 +93,62 @@ public class MusicServiceImpl implements MusicService {
         }
         return rtMethod;
     }
+    /**
+     * Executes the pause command to pause the playback in the guild associated with the given event.
+     * <p>
+     * This method performs the following steps:
+     * <ul>
+     *   <li>Verifies the event using {@link #verifyEvent(SlashCommandInteractionEvent)}.</li>
+     *   <li>Pauses the playback using the {@link PlayerManager#pausePlayback(SlashCommandInteractionEvent)} method.</li>
+     *   <li>Replies to the event with a confirmation message.</li>
+     * </ul>
+     * If an exception occurs during execution, an error message is logged, a reply is sent to the event,
+     * and a {@link RuntimeException} is thrown.
+     * </p>
+     *
+     * @param event the {@link SlashCommandInteractionEvent} that triggered the pause command.
+     * @return a string indicating the result of the command execution.
+     * @throws RuntimeException if an unexpected error occurs during the execution of the command.
+     */
+    @Override
+    public String executePauseCommand(SlashCommandInteractionEvent event) {
+        String rtMethod;
+        try {
+            // Verificaciones
+            verifyEvent(event);
+
+            //Pausa la reproducción
+            playerManager.pausePlayback(event);
+
+            // Se muestra una respuesta
+            event.reply("Pause playback").queue();
+            rtMethod = "Pause command executed successfully";
+            log.info(rtMethod);
+
+        } catch (Exception e) {
+            rtMethod = "Error in executePauseCommand";
+            log.error(rtMethod, e.getMessage());
+            event.reply("An unexpected error occurred").queue();
+            throw new RuntimeException(e.getMessage());
+        }
+        return rtMethod;
+    }
+
+    /**
+     * Verifies the validity of the given {@link SlashCommandInteractionEvent}.
+     * <p>
+     * This method performs several checks to ensure the event is valid and that the necessary conditions
+     * are met for executing commands. Specifically, it performs the following verifications:
+     * <ul>
+     *   <li>{@link DiscordUtil#verifyMember(SlashCommandInteractionEvent)} - Verifies the member initiating the event.</li>
+     *   <li>{@link DiscordUtil#verifyMemberVoiceState(SlashCommandInteractionEvent)} - Verifies the voice state of the member.</li>
+     *   <li>{@link DiscordUtil#verifyGuild(SlashCommandInteractionEvent)} - Verifies the guild associated with the event.</li>
+     *   <li>{@link DiscordUtil#verifySelfVoiceState(SlashCommandInteractionEvent)} - Verifies the bot's own voice state.</li>
+     * </ul>
+     *
+     * @param event the {@link SlashCommandInteractionEvent} to be verified.
+     * @throws RuntimeException if any of the verifications fail.
+     */
     private void verifyEvent(SlashCommandInteractionEvent event){
         // Verificaciones
         DiscordUtil.verifyMember(event);

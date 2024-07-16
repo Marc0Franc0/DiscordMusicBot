@@ -124,11 +124,38 @@ public class PlayerManager {
             }
         });
     }
+     * Retrieves the current playback queue for the guild associated with the given event.
+     * <p>
+     * This method fetches the music manager for the guild associated with the provided
+     * {@link SlashCommandInteractionEvent}. It then retrieves and returns the playback queue
+     * from the track scheduler of the retrieved music manager.
+     * </p>
+     *
+     * @param event the {@link SlashCommandInteractionEvent} containing the guild information.
+     * @return the {@link BlockingQueue} of {@link AudioTrack} representing the current playback queue.
+     * @throws NullPointerException if the guild associated with the event is null.
+     */
     public BlockingQueue<AudioTrack> getQueue(SlashCommandInteractionEvent event){
         //Se obtiene la cola
         return getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
                 .getTrackScheduler()
                 .getQueue();
+    }
+    /**
+     * Pauses the playback of the current track in the guild associated with the given event.
+     * <p>
+     * This method retrieves the music manager for the guild associated with the provided
+     * {@link SlashCommandInteractionEvent}. It then invokes the pause playback functionality
+     * on the track scheduler of the retrieved music manager.
+     * </p>
+     *
+     * @param event the {@link SlashCommandInteractionEvent} containing the guild information.
+     * @throws NullPointerException if the guild associated with the event is null.
+     */
+    public void pausePlayback(SlashCommandInteractionEvent event) {
+        getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
+                .getTrackScheduler()
+                .pausePlayback();
     }
     /**
      * Plays or queues a track in the specified guild's music manager.
