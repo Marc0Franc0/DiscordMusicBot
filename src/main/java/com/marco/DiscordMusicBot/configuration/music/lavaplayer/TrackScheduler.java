@@ -127,4 +127,16 @@ public class TrackScheduler extends AudioEventAdapter {
             player.setPaused(false);
         }
     }
+    /**
+     * Checks if there is a currently playing audio track.
+     * <p>
+     * This method verifies if the player is actively playing an audio track by checking
+     * if the information of the current playing track is not null.
+     * </p>
+     *
+     * @return {@code true} if there is an audio track currently playing, {@code false} otherwise.
+     */
+    public boolean isPlaying(){
+        return player.getPlayingTrack()!=null;
+    }
 }

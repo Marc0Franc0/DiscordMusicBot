@@ -144,32 +144,51 @@ public class PlayerManager {
     }
     /**
      * Pauses the playback of the current track in the guild associated with the given event.
+     * Pauses playback of the current audio track in the guild's music manager if it is playing.
      * <p>
-     * This method retrieves the music manager for the guild associated with the provided
-     * {@link SlashCommandInteractionEvent}. It then invokes the pause playback functionality
-     * on the track scheduler of the retrieved music manager.
+     * This method checks if there is an active audio track playing in the guild's music manager
+     * and pauses playback if it is currently playing.
      * </p>
      *
      * @param event the {@link SlashCommandInteractionEvent} containing the guild information.
      * @throws NullPointerException if the guild associated with the event is null.
+     * @param event the {@link SlashCommandInteractionEvent} triggering the command, containing necessary context.
+     * @return {@code true} if playback was successfully paused, {@code false} otherwise (e.g., no track is playing).
+     * @throws IllegalArgumentException if the guild from the event is {@code null}.
      */
-    public void pausePlayback(SlashCommandInteractionEvent event) {
-        getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
-                .getTrackScheduler()
-                .pausePlayback();
+    public boolean pausePlayback(SlashCommandInteractionEvent event) {
+        boolean rt = false;
+        GuildMusicManager guildMusicManager =
+                getGuildMusicManager(Objects.requireNonNull(event.getGuild(), "Guild cannot be null"));
+        if (guildMusicManager.getTrackScheduler().isPlaying()) {
+            guildMusicManager.getTrackScheduler().pausePlayback();
+            rt = true;
+        }
+
+        return rt;
     }
     /**
      * Resumes the playback of the current track in the guild associated with the given event.
+     * Resumes playback of the current audio track in the guild's music manager if it is paused.
      * <p>
-     * This method retrieves the music manager for the guild associated with the provided
-     * {@link SlashCommandInteractionEvent}. It then invokes the resume playback functionality
-     * on the track scheduler of the retrieved music manager.
+     * This method checks if there is an active audio track playing in the guild's music manager
+     * and resumes playback if it was previously paused.
      * </p>
      *
-     * @param event the {@link SlashCommandInteractionEvent} containing the guild information.
-     * @throws NullPointerException if the guild associated with the event is null.
+     * @param event the {@link SlashCommandInteractionEvent} triggering the command, containing necessary context.
+     * @return {@code true} if playback was successfully resumed, {@code false} otherwise (e.g., no track is playing).
+     * @throws IllegalArgumentException if the guild from the event is {@code null}.
      */
-    public void resumePlayback(SlashCommandInteractionEvent event) {
+    public boolean resumePlayback(SlashCommandInteractionEvent event) {
+        boolean rt=false;
+        GuildMusicManager guildMusicManager =
+                getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"));
+        if(guildMusicManager.getTrackScheduler().isPlaying()){
+             guildMusicManager.getTrackScheduler().resumePlayback();
+             rt=true;
+        }
+        return rt;
+    }
         getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
                 .getTrackScheduler()
                 .resumePlayback();

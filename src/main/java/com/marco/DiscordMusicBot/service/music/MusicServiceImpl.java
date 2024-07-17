@@ -120,8 +120,11 @@ public class MusicServiceImpl implements MusicService {
             //Pausa la reproducción
             playerManager.pausePlayback(event);
 
+            boolean isPaused = playerManager.pausePlayback(event);
             // Se muestra una respuesta
             event.reply("Pause playback").queue();
+            rtMethod = isPaused?"Pause playback" : "Playback not paused";
+            event.reply(rtMethod).queue();
             rtMethod = "Pause command executed successfully";
             log.info(rtMethod);
 
@@ -160,8 +163,11 @@ public class MusicServiceImpl implements MusicService {
             //Reanuda la reproducción
             playerManager.resumePlayback(event);
 
+            boolean isResumed = playerManager.resumePlayback(event);
+            rtMethod = isResumed?"Resume playback":"Playback not resumed";
             // Se muestra una respuesta
             event.reply("Resume playback").queue();
+            event.reply(rtMethod).queue();
             rtMethod = "Resume command executed successfully";
             log.info(rtMethod);
 
