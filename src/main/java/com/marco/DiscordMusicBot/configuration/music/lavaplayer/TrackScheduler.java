@@ -139,4 +139,7 @@ public class TrackScheduler extends AudioEventAdapter {
     public boolean isPlaying(){
         return player.getPlayingTrack()!=null;
     }
+    public void clearQueue() {
+        queue.clear();
+    }
 }

@@ -56,13 +56,13 @@ public class BotConfiguration{
      *
      * @return The list of initialized bot commands.
      */
-    private List<ICommand> initializeCommands() {
     @Bean
     public List<ICommand> initializeCommands() {
         List<ICommand> commandList = new ArrayList<>();
         commandList.add(new HelpCommand());     // Add HelpCommand to the command list
         commandList.add(new PlayCommand());     // Add PlayCommand to the command list
         commandList.add(new QueueCommand());    // Add QueueCommand to the command list
+        commandList.add(new ClearCommand());    //Add ClearCommand to the  command list
         commandList.add(new PauseCommand());    //Add PauseCommand
         commandList.add(new ResumeCommand());   //Add ResumeCommand
         return commandList;

@@ -31,6 +31,9 @@ Pausa la reproducción de lo que se este escuchando.
 ### `/resume`
 
 Reanuda la reproducción y sigue desde donde fue pausado.
+### `/clear`
+
+Elimina todas las canciones que estén presentes en la cola de reproducción.
 ## Instalación y configuración
 1. Clonar repositorio
 ```shell
