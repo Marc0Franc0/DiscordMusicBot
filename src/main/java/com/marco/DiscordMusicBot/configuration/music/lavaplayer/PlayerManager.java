@@ -196,6 +196,18 @@ public class PlayerManager {
         getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
                 .getTrackScheduler()
                 .clearQueue();
+    public boolean clearQueue(SlashCommandInteractionEvent event){
+        boolean rt=false;
+        GuildMusicManager guildMusicManager =
+                getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"));
+        if(guildMusicManager.getTrackScheduler().isPlaying()){
+            //Se obtiene la cola y eliminan sus canciones dentro
+            getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
+                    .getTrackScheduler()
+                    .clearQueue();
+            rt=true;
+        }
+        return  rt;
     }
     }
     /**

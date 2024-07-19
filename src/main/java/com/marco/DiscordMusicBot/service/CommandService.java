@@ -2,6 +2,7 @@ package com.marco.DiscordMusicBot.service;
 
 import com.marco.DiscordMusicBot.service.help.HelpService;
 import com.marco.DiscordMusicBot.service.music.MusicService;
+import com.marco.DiscordMusicBot.service.music.MusicServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ public class CommandService{
     private final HelpService helpService;
     private final MusicService musicService;
     @Autowired
-    public CommandService(HelpService helpService,MusicService musicService) {
+    public CommandService(HelpService helpService, MusicServiceImpl musicService) {
         this.helpService = helpService;
         this.musicService=musicService;
     }

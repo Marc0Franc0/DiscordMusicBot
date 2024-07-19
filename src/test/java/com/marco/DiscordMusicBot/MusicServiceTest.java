@@ -96,6 +96,8 @@ public class MusicServiceTest {
         // Verificar interacciones con los mocks
         verify(mockEvent, times(1)).getName();
         verify(mockEvent, times(1)).reply("Pause playback");
+        //Se espera esta respuesta ya que no se simula una reproduccion  de una cancion al momento de testear
+        verify(mockEvent, times(1)).reply("Playback not paused");
     }
     @Test
     public void testExecuteResumeCommandWithoutMocks() {
@@ -115,6 +117,8 @@ public class MusicServiceTest {
         // Verificar interacciones con los mocks
         verify(mockEvent, times(1)).getName();
         verify(mockEvent, times(1)).reply("Resume playback");
+        //Se espera esta respuesta ya que no se simula una reproduccion  de una cancion al momento de testear
+        verify(mockEvent, times(1)).reply("Playback not resumed");
     }
     @Test
     public void testExecuteClearCommandWithoutMocks() {
@@ -134,6 +138,8 @@ public class MusicServiceTest {
         // Verificar interacciones con los mocks
         verify(mockEvent, times(1)).getName();
         verify(mockEvent, times(1)).reply("Deleted queue");
+        //Se espera esta respuesta ya que no se simula una reproduccion  de una cancion al momento de testear
+        verify(mockEvent, times(1)).reply("Not deleted queue");
     }
 
     private CommandService createCommandService() {
@@ -142,6 +148,8 @@ public class MusicServiceTest {
         AudioPlayerManager audioPlayerManager = new DefaultAudioPlayerManager();
         PlayerManager playerManager = new PlayerManager(audioPlayerManager);
         MusicService musicService = new MusicServiceImpl(playerManager);
+        PlayerManager playerManager = new PlayerManager(audioPlayerManager,true);
+        MusicServiceImpl musicService = new MusicServiceImpl(playerManager);
         return new CommandService(helpService, musicService);
     }
 

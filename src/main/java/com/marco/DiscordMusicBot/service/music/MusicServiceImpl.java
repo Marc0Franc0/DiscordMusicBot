@@ -191,8 +191,11 @@ public class MusicServiceImpl implements MusicService {
             //Se eliminan las canciones presentes en la cola de reproducción
             playerManager.clearQueue(event);
 
+            //Se intenta eliminar las canciones presentes en la cola de reproducción
+            boolean deletedQueue = playerManager.clearQueue(event);
+            rtMethod =deletedQueue?"Deleted queue":"Not deleted queue";
             // Se muestra una respuesta
-            event.reply("Deleted queue").queue();
+            event.reply(rtMethod).queue();
             rtMethod = "Clear command executed successfully";
             log.info(rtMethod);
 
