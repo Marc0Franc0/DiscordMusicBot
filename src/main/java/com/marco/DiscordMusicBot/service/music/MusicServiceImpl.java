@@ -118,11 +118,8 @@ public class MusicServiceImpl implements MusicService {
             verifyEvent(event);
 
             //Pausa la reproducción
-            playerManager.pausePlayback(event);
-
             boolean isPaused = playerManager.pausePlayback(event);
             // Se muestra una respuesta
-            event.reply("Pause playback").queue();
             rtMethod = isPaused?"Pause playback" : "Playback not paused";
             event.reply(rtMethod).queue();
             rtMethod = "Pause command executed successfully";
@@ -161,18 +158,46 @@ public class MusicServiceImpl implements MusicService {
             verifyEvent(event);
 
             //Reanuda la reproducción
-            playerManager.resumePlayback(event);
-
             boolean isResumed = playerManager.resumePlayback(event);
             rtMethod = isResumed?"Resume playback":"Playback not resumed";
             // Se muestra una respuesta
-            event.reply("Resume playback").queue();
             event.reply(rtMethod).queue();
             rtMethod = "Resume command executed successfully";
             log.info(rtMethod);
 
         } catch (Exception e) {
             rtMethod = "Error in executeResumeCommand";
+            log.error(rtMethod, e.getMessage());
+            event.reply("An unexpected error occurred").queue();
+            throw new RuntimeException(e.getMessage());
+        }
+        return rtMethod;
+    }
+    /**
+     * Executes the clear command in the Discord bot.
+     * This command removes all songs present in the playback queue.
+     *
+     * @param event The slash command interaction event received from Discord.
+     * @return A message indicating the result of the command execution.
+     * @throws RuntimeException If an unexpected error occurs during the execution of the command.
+     */
+    @Override
+    public String executeClearCommand(SlashCommandInteractionEvent event) {
+        String rtMethod;
+        try {
+            // Verificaciones
+            verifyEvent(event);
+
+            //Se eliminan las canciones presentes en la cola de reproducción
+            playerManager.clearQueue(event);
+
+            // Se muestra una respuesta
+            event.reply("Deleted queue").queue();
+            rtMethod = "Clear command executed successfully";
+            log.info(rtMethod);
+
+        } catch (Exception e) {
+            rtMethod = "Error in executeQueueCommand";
             log.error(rtMethod, e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());

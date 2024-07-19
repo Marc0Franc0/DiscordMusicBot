@@ -143,15 +143,12 @@ public class PlayerManager {
                 .getQueue();
     }
     /**
-     * Pauses the playback of the current track in the guild associated with the given event.
      * Pauses playback of the current audio track in the guild's music manager if it is playing.
      * <p>
      * This method checks if there is an active audio track playing in the guild's music manager
      * and pauses playback if it is currently playing.
      * </p>
      *
-     * @param event the {@link SlashCommandInteractionEvent} containing the guild information.
-     * @throws NullPointerException if the guild associated with the event is null.
      * @param event the {@link SlashCommandInteractionEvent} triggering the command, containing necessary context.
      * @return {@code true} if playback was successfully paused, {@code false} otherwise (e.g., no track is playing).
      * @throws IllegalArgumentException if the guild from the event is {@code null}.
@@ -168,7 +165,6 @@ public class PlayerManager {
         return rt;
     }
     /**
-     * Resumes the playback of the current track in the guild associated with the given event.
      * Resumes playback of the current audio track in the guild's music manager if it is paused.
      * <p>
      * This method checks if there is an active audio track playing in the guild's music manager
@@ -189,9 +185,18 @@ public class PlayerManager {
         }
         return rt;
     }
+    /**
+     * Clears all songs from the playback queue for the specified guild.
+     *
+     * @param event The slash command interaction event received from Discord, used to identify the guild.
+     * @throws NullPointerException If the event's guild is null.
+     */
+    public void clearQueue(SlashCommandInteractionEvent event){
+        //Se obtiene la cola y eliminan sus canciones dentro
         getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
                 .getTrackScheduler()
-                .resumePlayback();
+                .clearQueue();
+    }
     }
     /**
      * Plays or queues a track in the specified guild's music manager.
