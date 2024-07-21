@@ -55,13 +55,14 @@ public class PlayerManager {
      */
     @Autowired
     public PlayerManager(AudioPlayerManager audioPlayerManager) {
+    public PlayerManager(AudioPlayerManager audioPlayerManager,boolean excludeTwitch) {
         this.audioPlayerManager = audioPlayerManager;
 
         // Initialize guild music managers map
         this.guildMusicManagers = new HashMap<>();
 
         // Register audio source managers
-        initializeAudioSourceManagers();
+        initializeAudioSourceManagers(excludeTwitch);
 
         // Configure audio player manager settings
         configureAudioPlayerManager();
@@ -187,8 +188,10 @@ public class PlayerManager {
     }
     /**
      * Clears all songs from the playback queue for the specified guild.
+     * Clears all songs from the playback queue for the specified guild if a track is currently playing.
      *
      * @param event The slash command interaction event received from Discord, used to identify the guild.
+     * @return {@code true} if the queue was cleared; {@code false} if no track was playing and thus the queue was not cleared.
      * @throws NullPointerException If the event's guild is null.
      */
     public void clearQueue(SlashCommandInteractionEvent event){
@@ -203,12 +206,27 @@ public class PlayerManager {
         if(guildMusicManager.getTrackScheduler().isPlaying()){
             //Se obtiene la cola y eliminan sus canciones dentro
             getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
+            guildMusicManager
                     .getTrackScheduler()
                     .clearQueue();
             rt=true;
         }
         return  rt;
     }
+
+    /**
+     * Retrieves the current track's information being played in the Discord server.
+     *
+     * @param event The Slash command interaction event containing information about the server (guild).
+     * @return An {@link AudioTrackInfo} object containing the current track's information.
+     * @throws NullPointerException if the event is not associated with a server (guild).
+     */
+    public AudioTrackInfo getTrackInfo(SlashCommandInteractionEvent event) {
+        return getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"))
+                    .getTrackScheduler()
+                    .getCurrentTrackInfo();
+
+
     }
     /**
      * Plays or queues a track in the specified guild's music manager.
@@ -228,6 +246,7 @@ public class PlayerManager {
      * Initializes and registers audio source managers for various sources like YouTube, SoundCloud, etc.
      */
     private void initializeAudioSourceManagers() {
+    private void initializeAudioSourceManagers(boolean excludeTwitch) {
         YoutubeAudioSourceManager youtubeSourceManager = new YoutubeAudioSourceManager(true, new MusicWithThumbnail(), new WebWithThumbnail(), new AndroidTestsuiteWithThumbnail());
         audioPlayerManager.enableGcMonitoring();
         audioPlayerManager.registerSourceManager(youtubeSourceManager);
@@ -239,6 +258,17 @@ public class PlayerManager {
         audioPlayerManager.registerSourceManager(new GetyarnAudioSourceManager());
         audioPlayerManager.registerSourceManager(new NicoAudioSourceManager());
         audioPlayerManager.registerSourceManager(new HttpAudioSourceManager(MediaContainerRegistry.DEFAULT_REGISTRY));
+
+        // Registrar TwitchStreamAudioSourceManager solo si excludeTwitch es falso
+        if (!excludeTwitch) {
+            try {
+                audioPlayerManager.registerSourceManager(new TwitchStreamAudioSourceManager());
+            } catch (FriendlyException e) {
+                // Log la excepción y continuar sin Twitch
+                System.out.println("Failed to initialize TwitchStreamAudioSourceManager: " + e.getMessage());
+            }
+        }
+
     }
 
     /**

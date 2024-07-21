@@ -145,4 +145,26 @@ public class TrackScheduler extends AudioEventAdapter {
     public void clearQueue() {
         queue.clear();
     }
+/**
+ * Retrieves the current track's information being played.
+ *
+ * @return An {@link AudioTrackInfo} object containing the current track's information.
+ *         If no track is playing, returns an {@link AudioTrackInfo} with default values indicating no track is playing.
+ * @throws RuntimeException if an error occurs while retrieving the current track's information.
+ */
+    public AudioTrackInfo getCurrentTrackInfo(){
+        try{
+            if(!isPlaying()){
+                return new AudioTrackInfo
+                        ("It is not playing",
+                                "Author empty",0,
+                                "empty",false,"empty");
+
+            }
+            return player.getPlayingTrack().getInfo();
+        }catch (Exception e){
+            log.error("Error:{}",e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 }

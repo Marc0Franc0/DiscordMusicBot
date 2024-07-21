@@ -152,7 +152,25 @@ public class MusicServiceTest {
         MusicServiceImpl musicService = new MusicServiceImpl(playerManager);
         return new CommandService(helpService, musicService);
     }
+    @Test
+    public void testExecuteTrackInfoCommandWithoutMocks() {
+        // Configuración de mocks
+        SlashCommandInteractionEvent mockEvent = createMockSlashCommandInteractionEvent(new TrackInfoCommand());
 
+        // Configurar comportamiento para los componentes de audio
+        configureAudioComponents(mockEvent);
+
+        // Método selectExecute con el evento simulado
+        String result = commandService.selectExecute(mockEvent);
+
+        // Verificación
+        assertNotNull(result, "Expected non-null response");
+        assertEquals("track-info command executed successfully", result);
+
+        // Verificar interacciones con los mocks
+        verify(mockEvent, times(1)).getName();
+        verify(mockEvent, times(1)).replyEmbeds(any(MessageEmbed.class));
+    }
     private SlashCommandInteractionEvent createMockSlashCommandInteractionEvent(ICommand command) {
         SlashCommandInteractionEvent mockEvent = mock(SlashCommandInteractionEvent.class);
         ReplyCallbackAction replyAction = mock(ReplyCallbackAction.class);
@@ -166,6 +184,7 @@ public class MusicServiceTest {
                 when(mockEvent.deferReply()).thenReturn(replyAction);
             }
             case "queue" -> {
+            case "queue","track-info" -> {
                 when(mockEvent.getName()).thenReturn(command.getName());
                 when(mockEvent.replyEmbeds(any(MessageEmbed.class))).thenReturn(replyAction);
                 doNothing().when(replyAction).queue();
