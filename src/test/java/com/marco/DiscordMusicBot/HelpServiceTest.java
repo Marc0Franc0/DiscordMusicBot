@@ -45,9 +45,9 @@ public class HelpServiceTest {
         //obj audioPlayerManager
        AudioPlayerManager audioPlayerManager = new DefaultAudioPlayerManager();
        //obj playerManager
-       PlayerManager playerManager = new PlayerManager(audioPlayerManager);
+       PlayerManager playerManager = new PlayerManager(audioPlayerManager,true);
         //obj musicService
-        MusicService musicService = new MusicServiceImpl(playerManager);
+        MusicServiceImpl musicService = new MusicServiceImpl(playerManager);
         // Objeto CommandService
         CommandService commandService = new CommandService(helpService,musicService);
         // Ejecución de el método selectExecute con el evento "ideal"

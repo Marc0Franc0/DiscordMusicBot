@@ -1,9 +1,11 @@
 package com.marco.DiscordMusicBot.service.music;
 
 import com.marco.DiscordMusicBot.configuration.music.lavaplayer.PlayerManager;
+import com.marco.DiscordMusicBot.model.music.SingleMusicInfo;
 import com.marco.DiscordMusicBot.util.DiscordUtil;
 import com.marco.DiscordMusicBot.util.EmbedUtil;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -188,9 +190,6 @@ public class MusicServiceImpl implements MusicService {
             // Verificaciones
             verifyEvent(event);
 
-            //Se eliminan las canciones presentes en la cola de reproducción
-            playerManager.clearQueue(event);
-
             //Se intenta eliminar las canciones presentes en la cola de reproducción
             boolean deletedQueue = playerManager.clearQueue(event);
             rtMethod =deletedQueue?"Deleted queue":"Not deleted queue";
@@ -201,6 +200,54 @@ public class MusicServiceImpl implements MusicService {
 
         } catch (Exception e) {
             rtMethod = "Error in executeQueueCommand";
+            rtMethod = "Error in executeClearCommand";
+            log.error(rtMethod, e.getMessage());
+            event.reply("An unexpected error occurred").queue();
+            throw new RuntimeException(e.getMessage());
+        }
+        return rtMethod;
+    }
+
+    /**
+     * Executes the "track-info" command to retrieve and display the current playing track's information.
+     *
+     * @param event The Slash command interaction event containing information about the server (guild) and the user who issued the command.
+     * @return A message indicating whether the "track-info" command was executed successfully or if an error occurred.
+     * @throws RuntimeException if an unexpected error occurs during the command execution.
+     */
+    @Override
+    public String executeTrackInfoCommand(SlashCommandInteractionEvent event) {
+        String rtMethod;
+        try {
+            // Verificaciones
+            verifyEvent(event);
+
+            //Se obtiene info de la canción actual y se contruye una respuesta
+            AudioTrackInfo audioTrackInfo = playerManager.getTrackInfo(event);
+            EmbedBuilder embedBuilder = new EmbedBuilder();
+            if(audioTrackInfo.title.equals("It is not playing")){
+                embedBuilder.setTitle(audioTrackInfo.title).setDescription("Unable to execute the command");
+            }else{
+                embedBuilder = EmbedUtil.buildMusicInfo(new SingleMusicInfo(
+                                                audioTrackInfo.title,
+                                                audioTrackInfo.author,
+                                                audioTrackInfo.uri));
+                embedBuilder.setTitle("Current track");
+            }
+
+            // Se muestra una respuesta
+            event.replyEmbeds(embedBuilder.build()).queue();
+            rtMethod = "track-info command executed successfully";
+            log.info(rtMethod);
+
+        } catch (Exception e) {
+            rtMethod = "Error in executeTrackInfoCommand";
+            log.error(rtMethod, e.getMessage());
+            event.reply("An unexpected error occurred").queue();
+            throw new RuntimeException(e.getMessage());
+        }
+        return rtMethod;
+    }
             log.error(rtMethod, e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());

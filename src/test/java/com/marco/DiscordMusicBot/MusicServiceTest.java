@@ -5,7 +5,6 @@ import com.marco.DiscordMusicBot.commands.music.*;
 import com.marco.DiscordMusicBot.configuration.music.lavaplayer.PlayerManager;
 import com.marco.DiscordMusicBot.service.CommandService;
 import com.marco.DiscordMusicBot.service.help.HelpService;
-import com.marco.DiscordMusicBot.service.music.MusicService;
 import com.marco.DiscordMusicBot.service.music.MusicServiceImpl;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -95,7 +94,6 @@ public class MusicServiceTest {
 
         // Verificar interacciones con los mocks
         verify(mockEvent, times(1)).getName();
-        verify(mockEvent, times(1)).reply("Pause playback");
         //Se espera esta respuesta ya que no se simula una reproduccion  de una cancion al momento de testear
         verify(mockEvent, times(1)).reply("Playback not paused");
     }
@@ -116,7 +114,6 @@ public class MusicServiceTest {
 
         // Verificar interacciones con los mocks
         verify(mockEvent, times(1)).getName();
-        verify(mockEvent, times(1)).reply("Resume playback");
         //Se espera esta respuesta ya que no se simula una reproduccion  de una cancion al momento de testear
         verify(mockEvent, times(1)).reply("Playback not resumed");
     }
@@ -137,7 +134,6 @@ public class MusicServiceTest {
 
         // Verificar interacciones con los mocks
         verify(mockEvent, times(1)).getName();
-        verify(mockEvent, times(1)).reply("Deleted queue");
         //Se espera esta respuesta ya que no se simula una reproduccion  de una cancion al momento de testear
         verify(mockEvent, times(1)).reply("Not deleted queue");
     }
@@ -146,13 +142,29 @@ public class MusicServiceTest {
         List<ICommand> commandList = new ArrayList<>();
         HelpService helpService = new HelpService(commandList);
         AudioPlayerManager audioPlayerManager = new DefaultAudioPlayerManager();
-        PlayerManager playerManager = new PlayerManager(audioPlayerManager);
-        MusicService musicService = new MusicServiceImpl(playerManager);
         PlayerManager playerManager = new PlayerManager(audioPlayerManager,true);
         MusicServiceImpl musicService = new MusicServiceImpl(playerManager);
         return new CommandService(helpService, musicService);
     }
+    @Test
+    public void testExecuteTrackInfoCommandWithoutMocks() {
+        // Configuración de mocks
+        SlashCommandInteractionEvent mockEvent = createMockSlashCommandInteractionEvent(new TrackInfoCommand());
 
+        // Configurar comportamiento para los componentes de audio
+        configureAudioComponents(mockEvent);
+
+        // Método selectExecute con el evento simulado
+        String result = commandService.selectExecute(mockEvent);
+
+        // Verificación
+        assertNotNull(result, "Expected non-null response");
+        assertEquals("track-info command executed successfully", result);
+
+        // Verificar interacciones con los mocks
+        verify(mockEvent, times(1)).getName();
+        verify(mockEvent, times(1)).replyEmbeds(any(MessageEmbed.class));
+    }
     private SlashCommandInteractionEvent createMockSlashCommandInteractionEvent(ICommand command) {
         SlashCommandInteractionEvent mockEvent = mock(SlashCommandInteractionEvent.class);
         ReplyCallbackAction replyAction = mock(ReplyCallbackAction.class);
@@ -165,7 +177,7 @@ public class MusicServiceTest {
                 when(mockEvent.getName()).thenReturn(command.getName());
                 when(mockEvent.deferReply()).thenReturn(replyAction);
             }
-            case "queue" -> {
+            case "queue","track-info" -> {
                 when(mockEvent.getName()).thenReturn(command.getName());
                 when(mockEvent.replyEmbeds(any(MessageEmbed.class))).thenReturn(replyAction);
                 doNothing().when(replyAction).queue();
