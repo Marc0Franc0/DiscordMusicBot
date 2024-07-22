@@ -34,6 +34,12 @@ Reanuda la reproducción y sigue desde donde fue pausado.
 ### `/clear`
 
 Elimina todas las canciones que estén presentes en la cola de reproducción.
+### `/track-info`
+
+Muestra información sobre lo que se este reproduciendo.
+### `/stop`
+
+Salta la reproducción de lo que se este escuchando para escuchar lo siguiente y en el caso de no haber una cola de reproducción se detiene.
 ## Instalación y configuración
 1. Clonar repositorio
 ```shell

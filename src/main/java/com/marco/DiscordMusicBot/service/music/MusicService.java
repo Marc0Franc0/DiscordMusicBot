@@ -11,4 +11,5 @@ public interface MusicService {
     String executeResumeCommand(SlashCommandInteractionEvent event);
     String executeClearCommand(SlashCommandInteractionEvent event);
     String executeTrackInfoCommand(SlashCommandInteractionEvent event);
+    String executeStopCommand(SlashCommandInteractionEvent event);
 }

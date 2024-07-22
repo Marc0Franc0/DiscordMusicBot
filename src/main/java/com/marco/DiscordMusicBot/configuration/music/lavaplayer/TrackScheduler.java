@@ -167,4 +167,10 @@ public class TrackScheduler extends AudioEventAdapter {
             throw new RuntimeException(e.getMessage());
         }
     }
+    /**
+     * Stops the currently playing track.
+     */
+    public void stopTrack(){
+        player.stopTrack();
+    }
 }

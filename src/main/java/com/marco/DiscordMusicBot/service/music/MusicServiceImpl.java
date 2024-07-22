@@ -248,6 +248,31 @@ public class MusicServiceImpl implements MusicService {
         }
         return rtMethod;
     }
+
+    /**
+     * Handles the execution of the /stop command in the Discord bot.
+     * This method stops the current music playback and provides an appropriate response to the user.
+     *
+     * @param event The SlashCommandInteractionEvent received from Discord. Contains information about the executed command and the context in which it was executed.
+     * @return A message indicating the result of the command execution. It can be "stop command executed successfully" if the command was executed correctly or an error message if there was an issue.
+     */
+    @Override
+    public String executeStopCommand(SlashCommandInteractionEvent event) {
+        String rtMethod;
+        try {
+            // Verificaciones
+            verifyEvent(event);
+
+            //Se intenta detener la reproducción del bot
+            boolean stopPlayback = playerManager.stopPlayback(event);
+            rtMethod =stopPlayback?"Stop playback":"Playback not stopped";
+            // Se muestra una respuesta
+            event.reply(rtMethod).queue();
+            rtMethod = "stop command executed successfully";
+            log.info(rtMethod);
+
+        } catch (Exception e) {
+            rtMethod = "Error in executeStopCommand";
             log.error(rtMethod, e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());

@@ -165,6 +165,26 @@ public class MusicServiceTest {
         verify(mockEvent, times(1)).getName();
         verify(mockEvent, times(1)).replyEmbeds(any(MessageEmbed.class));
     }
+    @Test
+    public void testExecuteStopCommandWithoutMocks() {
+        // Configuración de mocks
+        SlashCommandInteractionEvent mockEvent = createMockSlashCommandInteractionEvent(new StopCommand());
+
+        // Configurar comportamiento para los componentes de audio
+        configureAudioComponents(mockEvent);
+
+        // Método selectExecute con el evento simulado
+        String result = commandService.selectExecute(mockEvent);
+
+        // Verificación
+        assertNotNull(result, "Expected non-null response");
+        assertEquals("stop command executed successfully", result);
+
+        // Verificar interacciones con los mocks
+        verify(mockEvent, times(1)).getName();
+        //Se espera esta respuesta ya que no se simula una reproduccion  de una cancion al momento de testear
+        verify(mockEvent, times(1)).reply("Playback not stopped");
+    }
     private SlashCommandInteractionEvent createMockSlashCommandInteractionEvent(ICommand command) {
         SlashCommandInteractionEvent mockEvent = mock(SlashCommandInteractionEvent.class);
         ReplyCallbackAction replyAction = mock(ReplyCallbackAction.class);
@@ -182,7 +202,7 @@ public class MusicServiceTest {
                 when(mockEvent.replyEmbeds(any(MessageEmbed.class))).thenReturn(replyAction);
                 doNothing().when(replyAction).queue();
             }
-            case "pause","resume","clear" -> {
+            case "pause","resume","clear","stop" -> {
                 when(mockEvent.getName()).thenReturn(command.getName());
                 when(mockEvent.reply(anyString())).thenReturn(replyAction);
                 doNothing().when(replyAction).queue();

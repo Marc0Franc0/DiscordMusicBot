@@ -65,6 +65,7 @@ public class BotConfiguration{
         commandList.add(new ClearCommand());    //Add ClearCommand to the  command list
         commandList.add(new PauseCommand());    //Add PauseCommand
         commandList.add(new ResumeCommand());   //Add ResumeCommand
+        commandList.add(new StopCommand());     //Add StopCommand
         commandList.add(new TrackInfoCommand());//Add TrackInfoCommand
         return commandList;
     }

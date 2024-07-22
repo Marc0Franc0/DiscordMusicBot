@@ -234,6 +234,24 @@ public class PlayerManager {
 
     }
     /**
+     * Stops the current music playback if there is an active track playing.
+     *
+     * @param event The SlashCommandInteractionEvent received from Discord. It contains information about the executed command and the context in which it was executed.
+     * @return A boolean indicating whether the playback was successfully stopped (true) or not (false).
+     * @throws NullPointerException if the event's guild is null.
+     */
+    public boolean stopPlayback(SlashCommandInteractionEvent event){
+        boolean rt=false;
+        GuildMusicManager guildMusicManager =
+                getGuildMusicManager(Objects.requireNonNull(event.getGuild(),"Guild cannot be null"));
+        if(guildMusicManager.getTrackScheduler().isPlaying()){
+            //Se detiene la reproducción
+            guildMusicManager.getTrackScheduler().stopTrack();
+            rt=true;
+        }
+        return  rt;
+    }
+    /**
      * Plays or queues a track in the specified guild's music manager.
      *
      * @param guildMusicManager  The GuildMusicManager instance for the guild.
