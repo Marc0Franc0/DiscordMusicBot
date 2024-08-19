@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  app:
+    container_name: app-container
+    image: marc0franc0/discord-music-bot:1.0.0
+    ports:
+      - "9090:8080"
+    restart: always
+    environment:
+      BOT_TOKEN: your_bot_token

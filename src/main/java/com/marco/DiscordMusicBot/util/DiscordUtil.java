@@ -9,9 +9,15 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Objects;
+import java.util.regex.Pattern;
+
 @UtilityClass
 @Slf4j
 public class DiscordUtil {
+    private static final Pattern URL_PATTERN = Pattern.compile(
+            "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$",
+            Pattern.CASE_INSENSITIVE
+    );
     /**
      * Builds a music URI from a given link.
      * If the link is not a valid URI, treats it as a YouTube search.
@@ -20,12 +26,13 @@ public class DiscordUtil {
      * @return The original link if it is a valid URI, or a YouTube search string if not.
      */
     public String buildMusicUri(String link) {
-        try {
-            new URI(link);
-        } catch (URISyntaxException e) {
-            link = "ytsearch:" + link;
+        if (URL_PATTERN.matcher(link).matches()) {
+            // Si el enlace es una URL válida, devuélvelo sin cambios
+            return link;
+        } else {
+            // Si el enlace no es una URL válida, agrégale el prefijo de búsqueda de YouTube
+            return "ytsearch:" + link;
         }
-        return link;
     }
     /**
      * Verifies that the bot is in the same voice channel as the member who initiated the command.

@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.marco</groupId>
 	<artifactId>DiscordMusicBot</artifactId>
-	<version>0.1.0</version>
+	<version>1.0.0</version>
 	<name>DiscordMusicBot</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
