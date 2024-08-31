@@ -44,20 +44,10 @@ Salta la reproducción de lo que se este escuchando para escuchar lo siguiente y
 1. Clonar repositorio
 ```shell
 git clone https://github.com/Marc0Franc0/DiscordMusicBot
-``` 
-2. Seguir pasos para ejecución con Maven o Docker
-
-## Ejecución con Docker
-Para construir y ejecutar la aplicación necesita:
-- [Docker](https://www.docker.com/products/docker-desktop/)
-
-Ejecutar localmente
-3. Configura valores en [docker-compose.yml](https://github.com/Marc0Franc0/DiscordMusicBot/blob/main/docker-compose.yml)
-- Colocar el valor de "BOT_TOKEN"
-4. Inicia la app
-```shell
-docker compose up --build
 ```
+2. Configura el token del bot en el [archivo de configuración](https://github.com/Marc0Franc0/DiscordMusicBot/blob/main/src/main/resources/application.properties):
+- Modifica el valor de ${BOT_TOKEN}
+3. Seguir pasos para ejecución con Maven
 
 ## Ejecución con Maven
 
@@ -67,14 +57,12 @@ Para construir y ejecutar la aplicación necesita:
 - [Maven 3+](https://maven.apache.org)
 
 Ejecutar localmente
-3. Configura valores en [archivo de configuración](https://github.com/Marc0Franc0/DiscordMusicBot/blob/main/src/main/resources/application.properties):
-- Modifica el valor de ${BOT_TOKEN}
-3. Instala dependencias
+1. Instala las dependencias
 ```shell
 cd DiscordMusicBot
 mvn clean install
 ```
-4.Inicia la app
+2. Inicia la app
 ```shell
 mvn spring-boot:run
 ```
