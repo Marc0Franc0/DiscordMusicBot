@@ -3,9 +3,9 @@ package com.marco.DiscordMusicBot.model.music;
 import lombok.*;
 
 @Getter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString
 public abstract class MusicInfo {
     private String title;
     private String author;

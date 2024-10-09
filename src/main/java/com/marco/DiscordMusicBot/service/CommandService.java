@@ -1,13 +1,14 @@
 package com.marco.DiscordMusicBot.service;
 
+import com.marco.DiscordMusicBot.commands.ICommand;
 import com.marco.DiscordMusicBot.service.help.HelpService;
-import com.marco.DiscordMusicBot.service.music.MusicService;
 import com.marco.DiscordMusicBot.service.music.MusicServiceImpl;
+import dev.arbjerg.lavalink.client.LavalinkClient;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -15,12 +16,13 @@ import java.util.Objects;
 public class CommandService{
 
     private final HelpService helpService;
-    private final MusicService musicService;
+    private final MusicServiceImpl musicService;
     @Autowired
-    public CommandService(HelpService helpService, MusicServiceImpl musicService) {
-        this.helpService = helpService;
-        this.musicService=musicService;
+    public CommandService(LavalinkClient lavalinkClient,List<ICommand> commandList) {
+        this.helpService = new HelpService(commandList);
+        this.musicService=new MusicServiceImpl(lavalinkClient);
     }
+
     /**
      * Selects and executes the appropriate command based on the event name.
      * Supported commands are "help", "play", and "queue".
