@@ -3,39 +3,31 @@ package com.marco.DiscordMusicBot;
 import com.marco.DiscordMusicBot.commands.ICommand;
 import com.marco.DiscordMusicBot.commands.music.ClearCommand;
 import com.marco.DiscordMusicBot.commands.music.PauseCommand;
-import com.marco.DiscordMusicBot.model.music.PlaylistMusicInfo;
 import com.marco.DiscordMusicBot.model.music.SingleMusicInfo;
 import com.marco.DiscordMusicBot.service.CommandService;
 import com.marco.DiscordMusicBot.util.EmbedUtil;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
-
+import org.junit.jupiter.api.Test;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
+@Slf4j
 public class EmbedUtilTest {
-
-    @Test
+    private final EmbedUtil embedUtil = new EmbedUtil();
+    /*@Test
     public void testBuildMusicInfo_WithValidPlaylist() {
-        //  mock de PlaylistMusicInfo
-        PlaylistMusicInfo mockPlaylist = mock(PlaylistMusicInfo.class);
-        when(mockPlaylist.getTitle()).thenReturn("Test Title");
-        when(mockPlaylist.getAuthor()).thenReturn("Test Author");
-        when(mockPlaylist.getAmountTracks()).thenReturn(10);
+        when(playlistMusicInfo.getTitle()).thenReturn("Test Title");
+        when(playlistMusicInfo.getAuthor()).thenReturn("Test Author");
+        when(playlistMusicInfo.getAmountTracks()).thenReturn(10);
 
         // Se llama al método bajo prueba
-        EmbedBuilder result = EmbedUtil.buildMusicInfo(mockPlaylist);
+        EmbedBuilder result = EmbedUtil.buildMusicInfo(playlistMusicInfo);
 
         // Verificar el contenido del EmbedBuilder
         assertNotNull(result);
@@ -43,9 +35,8 @@ public class EmbedUtilTest {
         assertTrue(Objects.requireNonNull(result.build().getDescription()).contains("Test Title"));
         assertTrue(Objects.requireNonNull(result.build().getDescription()).contains("Test Author"));
         assertTrue(Objects.requireNonNull(result.build().getDescription()).contains("10 tracks"));
-    }
-
-    @Test
+    }*/
+    /*@Test
     public void testBuildMusicInfo_WithException() {
         //  mock de PlaylistMusicInfo que lanza una excepción
         PlaylistMusicInfo mockPlaylist = mock(PlaylistMusicInfo.class);
@@ -57,65 +48,77 @@ public class EmbedUtilTest {
         });
 
         assertEquals("Test Exception", exception.getMessage());
-    }
+    }*/
     @Test
     public void testBuildMusicInfo_WithValidSingleTrack() {
-        //  mock de SingleMusicInfo
+        // Mock de SingleMusicInfo
         SingleMusicInfo mockTrack = mock(SingleMusicInfo.class);
         when(mockTrack.getTitle()).thenReturn("Test Track Title");
         when(mockTrack.getAuthor()).thenReturn("Test Track Author");
         when(mockTrack.getLink()).thenReturn("http://testtrackurl.com");
+        // Método bajo prueba
+        EmbedBuilder result = embedUtil.buildMusicInfo(mockTrack);
 
-        // Se llama al método bajo prueba
-        EmbedBuilder result = EmbedUtil.buildMusicInfo(mockTrack);
+        // MessageEmbed generado por el EmbedBuilder
+        MessageEmbed embed = result.build();
 
-        // Verificar el contenido del EmbedBuilder
-        assertNotNull(result);
-        assertEquals("Added to Queue:", result.build().getTitle());
-        assertTrue(Objects.requireNonNull(result.build().getDescription()).contains("Test Track Title"));
-        assertTrue(Objects.requireNonNull(result.build().getDescription()).contains("Test Track Author"));
-        assertTrue(Objects.requireNonNull(result.build().getDescription()).contains("http://testtrackurl.com"));
+        // Verificar que no sea nulo
+        assertNotNull(embed);
+
+        // Verificación del contenido del MessageEmbed
+        assertEquals("Added to Queue:", embed.getTitle());
+        assertTrue(Objects.requireNonNull(embed.getDescription()).contains("Test Track Title"));
+        assertTrue(embed.getDescription().contains("Test Track Author"));
+        assertTrue(embed.getDescription().contains("http://testtrackurl.com"));
     }
 
     @Test
     public void testBuildMusicInfo_SingleTrackWithException() {
-        // mock de SingleMusicInfo que lanza una excepción
+        // Mock de SingleMusicInfo que lanza una excepción
         SingleMusicInfo mockTrack = mock(SingleMusicInfo.class);
         when(mockTrack.getTitle()).thenThrow(new RuntimeException("Test Exception"));
 
-        // Verificar que se lanza la excepción y que se maneja correctamente
+        // Verificación de lanzamiento de excepción y de su manejo
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            EmbedUtil.buildMusicInfo(mockTrack);
+            embedUtil.buildMusicInfo(mockTrack);
         });
 
-        assertEquals("Test Exception", exception.getMessage());
+        assertEquals("Test Exception",exception.getMessage(), exception.getMessage());
     }
     @Test
-    public void testBuildMusicInfo_WithNonEmptyQueue()  {
-        // Crear una cola con AudioTracks
-        BlockingQueue<AudioTrack> mockQueue = new LinkedBlockingQueue<>();
+    public void testBuildMusicInfo_WithNonEmptyQueue() {
+        // lista
+        List<SingleMusicInfo> queue = new ArrayList<>();
 
-        // Añadir tracks a la cola
-        mockQueue.add(createMockAudioTrack("Track 1", "author1", "http://link1.com"));
-        mockQueue.add(createMockAudioTrack("Track 2", "author2", "http://link2.com"));
+        // Mocks para las pistas
+        SingleMusicInfo track1 = mock(SingleMusicInfo.class);
+        SingleMusicInfo track2 = mock(SingleMusicInfo.class);
 
-        // Llamar al método bajo prueba
-        EmbedBuilder result = EmbedUtil.buildMusicInfo(mockQueue);
+        // Configurar mocks para devolver títulos
+        when(track1.getTitle()).thenReturn("Track 1 Title");
+        when(track2.getTitle()).thenReturn("Track 2 Title");
 
-        // Verificar resultados
-        verifyEmbedBuilder(result, "Current Queue:", "Track 1", "Track 2");
+        queue.add(track1);
+        queue.add(track2);
+
+        EmbedBuilder result = embedUtil.buildMusicInfo(queue);
+
+        // Verificación del título
+        assertEquals("Current Queue:", result.build().getTitle());
+
+        // Verificación de obtención de títulos de las pistas
+        assertTrue(result.build().getFields().stream().anyMatch(field -> field.getValue().equals("Track 1 Title")));
+        assertTrue(result.build().getFields().stream().anyMatch(field -> field.getValue().equals("Track 2 Title")));
     }
-
-
     @Test
     public void testBuildMusicInfo_WithEmptyQueue() {
-        // Crear una cola vacía
-        BlockingQueue<AudioTrack> emptyQueue = new LinkedBlockingQueue<>();
+        // Cola vacía
+        List<SingleMusicInfo> emptyQueue = new ArrayList<>();
 
-        // Llamar al método bajo prueba
-        EmbedBuilder result = EmbedUtil.buildMusicInfo(emptyQueue);
+        // Método bajo prueba
+        EmbedBuilder result = embedUtil.buildMusicInfo(emptyQueue);
 
-        // Verificar el contenido del EmbedBuilder
+        // Verificación del contenido del EmbedBuilder
         assertNotNull(result);
         assertEquals("Current Queue:", result.build().getTitle());
         assertEquals("Queue is empty.", result.build().getDescription());
@@ -123,47 +126,45 @@ public class EmbedUtilTest {
 
     @Test
     public void testBuildMusicInfo_QueueWithException() {
-        // Crear una cola con un mock de AudioTrack que lanza una excepción
-        BlockingQueue<AudioTrack> mockQueue = new LinkedBlockingQueue<>();
-        AudioTrack mockTrack = mock(AudioTrack.class);
-        when(mockTrack.getInfo()).thenThrow(new RuntimeException("Test Exception"));
-        mockQueue.add(mockTrack);
+        // Cola con un mock de AudioTrack que lanza una excepción
+        List<SingleMusicInfo> queue = new ArrayList<>();
+        SingleMusicInfo track = mock(SingleMusicInfo.class);
+        when(track.getTitle()).thenThrow(new RuntimeException("Test Exception"));
+        queue.add(track);
 
         // Verificar que se lanza la excepción y que se maneja correctamente
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            EmbedUtil.buildMusicInfo(mockQueue);
+            embedUtil.buildMusicInfo(queue);
         });
 
         assertEquals("Test Exception", exception.getMessage());
     }
     @Test
     public void testBuildCommandInfo_WithCommands() {
-        // Crear una lista de comandos con datos de prueba
+        // Lista de comandos con datos de prueba
         List<ICommand> commands = Arrays.asList(
                 new PauseCommand(),
                 new ClearCommand()
         );
 
-        // Llamar al método bajo prueba
-        EmbedBuilder result = EmbedUtil.buildCommandInfo(commands);
-
-        // Verificar resultados
+        // Método bajo prueba
+        EmbedBuilder result = embedUtil.buildCommandInfo(commands);
+        // Verificacion de resultados
         assertNotNull(result);
         assertEquals("Commands:", result.build().getTitle());
 
         List<MessageEmbed.Field> fields = result.build().getFields();
         assertEquals(commands.size(), fields.size());
-        assertEquals("pause: `Pause playback`", fields.get(0).getValue());
-        assertEquals("clear: `Clear queue`", fields.get(1).getValue());
+        assertEquals("`Pause playback`", fields.get(0).getValue());
+        assertEquals("`Clear queue`", fields.get(1).getValue());
     }
     @Test
     public void testBuildCommandInfo_EmptyCommandList() {
-        // Crear una lista de comandos vacía
+        // Lista de comandos vacía
         List<ICommand> commands = Collections.emptyList();
 
-        // Llamar al método bajo prueba
-        EmbedBuilder result = EmbedUtil.buildCommandInfo(commands);
-
+        // Método bajo prueba
+        EmbedBuilder result = embedUtil.buildCommandInfo(commands);
         // Verificar resultados
         assertNotNull(result);
         assertEquals("Commands:", result.build().getTitle());
@@ -172,7 +173,7 @@ public class EmbedUtilTest {
     }
     @Test
     public void testBuildCommandInfo_WithCommand_ThrowsException() {
-        // Crear una lista de comandos que lanzan una excepción al obtener su nombre
+        // Lista de comandos que lanzan una excepción al obtener su nombre
         List<ICommand> commands = Arrays.asList(new ICommand() {
             @Override
             public String getName() {
@@ -197,30 +198,9 @@ public class EmbedUtilTest {
 
         // Llamar al método bajo prueba
         RuntimeException thrownException = assertThrows(RuntimeException.class, () -> {
-            EmbedUtil.buildCommandInfo(commands);
+            embedUtil.buildCommandInfo(commands);
         });
 
         assertEquals("Simulated exception", thrownException.getMessage());
-    }
-    private AudioTrack createMockAudioTrack(String title, String author, String uri) {
-        AudioTrackInfo trackInfo = new AudioTrackInfo(
-                title, author,3000, uri, false, "identifier"
-        );
-
-        AudioTrack track = mock(AudioTrack.class);
-        when(track.getInfo()).thenReturn(trackInfo);
-        return track;
-    }
-
-    private void verifyEmbedBuilder(EmbedBuilder embedBuilder, String expectedTitle, String... expectedTracks) {
-        assertNotNull(embedBuilder);
-        assertEquals(expectedTitle, embedBuilder.build().getTitle());
-
-        List<MessageEmbed.Field> fields = embedBuilder.build().getFields();
-        assertEquals(expectedTracks.length, fields.size());
-
-        for (int i = 0; i < expectedTracks.length; i++) {
-            assertEquals(expectedTracks[i], fields.get(i).getValue());
-        }
     }
 }

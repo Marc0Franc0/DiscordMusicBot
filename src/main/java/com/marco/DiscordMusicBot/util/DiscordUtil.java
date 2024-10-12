@@ -1,20 +1,18 @@
 package com.marco.DiscordMusicBot.util;
 
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import java.net.URI;
-import java.net.URISyntaxException;
+import org.springframework.stereotype.Component;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-@UtilityClass
 @Slf4j
+@Component
 public class DiscordUtil {
-    private static final Pattern URL_PATTERN = Pattern.compile(
+    private final Pattern URL_PATTERN = Pattern.compile(
             "^(https?|ftp)://[^\\s/$.?#].[^\\s]*$",
             Pattern.CASE_INSENSITIVE
     );
@@ -42,6 +40,7 @@ public class DiscordUtil {
      * @param event The slash command interaction event.
      * @throws RuntimeException If the bot is not in the same voice channel as the member.
      */
+    @Deprecated
     public void verifySelfVoiceState(SlashCommandInteractionEvent event) {
         try {
             Guild guild = Objects.requireNonNull(event.getGuild(), "Guild cannot be null");

@@ -3,16 +3,13 @@ package com.marco.DiscordMusicBot.util;
 import com.marco.DiscordMusicBot.commands.ICommand;
 import com.marco.DiscordMusicBot.model.music.PlaylistMusicInfo;
 import com.marco.DiscordMusicBot.model.music.SingleMusicInfo;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.jetbrains.annotations.NotNull;
-
+import org.springframework.stereotype.Component;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
 
-@UtilityClass
+@Component
 @Slf4j
 public class EmbedUtil {
     /**
@@ -22,13 +19,14 @@ public class EmbedUtil {
      * @return An EmbedBuilder with the playlist information.
      * @throws RuntimeException If an unexpected error occurs while building the response.
      */
+    @Deprecated
     public EmbedBuilder buildMusicInfo(@NotNull PlaylistMusicInfo playlist) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         try{
         embedBuilder.setTitle("Added to Queue:");
         embedBuilder.setDescription(
                 "**Title:** `" + playlist.getTitle() + "`\n" +
-                        "**Author:** `" + playlist.getAuthor() + "`\n" +
+                       "**Author:** `" + playlist.getAuthor() + "`\n" +
                         "**Playlist:** `" + playlist.getAmountTracks() + " tracks`");}
         catch (Exception e){
             embedBuilder.setTitle("Error");
@@ -70,7 +68,7 @@ public class EmbedUtil {
      * @return An EmbedBuilder with the current queue information.
      * @throws RuntimeException If an unexpected error occurs while building the response.
      */
-    public EmbedBuilder buildMusicInfo(@NotNull BlockingQueue<AudioTrack> queue) {
+   public EmbedBuilder buildMusicInfo(@NotNull List<SingleMusicInfo> queue) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         try {
             embedBuilder.setTitle("Current Queue:");
@@ -79,7 +77,7 @@ public class EmbedUtil {
             }
 
             queue.forEach(audioTrack ->{
-                    embedBuilder.addField("",audioTrack.getInfo().title, false);
+                    embedBuilder.addField("",audioTrack.getTitle(), false);
             });
         } catch (Exception e) {
             embedBuilder.setTitle("Error");
@@ -112,8 +110,7 @@ public class EmbedUtil {
 
             commands.forEach(command ->{
                 embedBuilder.addField
-                        ("",command.getName()
-                                .concat(": `")
+                        ("/"+command.getName(),"`"
                                         .concat(command.getDescription())
                                         .concat("`"),
                                 false);

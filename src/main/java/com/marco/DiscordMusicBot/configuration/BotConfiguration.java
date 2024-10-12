@@ -6,6 +6,8 @@ import com.marco.DiscordMusicBot.commands.help.HelpCommand;
 import com.marco.DiscordMusicBot.commands.music.*;
 import com.marco.DiscordMusicBot.configuration.music.LavalinkClientManager;
 import com.marco.DiscordMusicBot.service.CommandService;
+import com.marco.DiscordMusicBot.util.DiscordUtil;
+import com.marco.DiscordMusicBot.util.EmbedUtil;
 import dev.arbjerg.lavalink.client.Helpers;
 import dev.arbjerg.lavalink.client.LavalinkClient;
 import dev.arbjerg.lavalink.client.event.WebSocketClosedEvent;
@@ -33,8 +35,10 @@ public class BotConfiguration{
     @Autowired
     @Lazy
     private LavalinkClientManager lavalinkClientManager;
-
-
+    @Autowired
+    private DiscordUtil discordUtil;
+    @Autowired
+    private EmbedUtil embedUtil;
     /**
      * Configures the {@link CommandManager} bean for managing bot commands.
      * <p>
@@ -46,7 +50,8 @@ public class BotConfiguration{
      */
     @Bean
     public CommandManager commandManager() {
-        CommandService commandService = new CommandService(lavalinkClient(), initializeCommands());
+        CommandService commandService =
+                new CommandService(lavalinkClient(), initializeCommands(),embedUtil,discordUtil);
         return new CommandManager(initializeCommands(), commandService);
     }
     /**

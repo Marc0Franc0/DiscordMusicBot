@@ -3,6 +3,8 @@ package com.marco.DiscordMusicBot.service;
 import com.marco.DiscordMusicBot.commands.ICommand;
 import com.marco.DiscordMusicBot.service.help.HelpService;
 import com.marco.DiscordMusicBot.service.music.MusicServiceImpl;
+import com.marco.DiscordMusicBot.util.DiscordUtil;
+import com.marco.DiscordMusicBot.util.EmbedUtil;
 import dev.arbjerg.lavalink.client.LavalinkClient;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -18,9 +20,11 @@ public class CommandService{
     private final HelpService helpService;
     private final MusicServiceImpl musicService;
     @Autowired
-    public CommandService(LavalinkClient lavalinkClient,List<ICommand> commandList) {
-        this.helpService = new HelpService(commandList);
-        this.musicService=new MusicServiceImpl(lavalinkClient);
+    public CommandService(LavalinkClient lavalinkClient,
+                          List<ICommand> commandList,
+                          EmbedUtil embedUtil,
+                          DiscordUtil discordUtil) {
+        this.helpService = new HelpService(commandList,embedUtil);
     }
 
     /**

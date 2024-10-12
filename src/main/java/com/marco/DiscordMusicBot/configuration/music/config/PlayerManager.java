@@ -1,9 +1,9 @@
 package com.marco.DiscordMusicBot.configuration.music.config;
 
+import com.marco.DiscordMusicBot.model.music.SingleMusicInfo;
 import com.marco.DiscordMusicBot.util.DiscordUtil;
 import dev.arbjerg.lavalink.client.LavalinkClient;
 import dev.arbjerg.lavalink.client.Link;
-import dev.arbjerg.lavalink.client.player.Track;
 import dev.arbjerg.lavalink.protocol.v4.TrackInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
@@ -11,17 +11,18 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.jetbrains.annotations.NotNull;
 import net.dv8tion.jda.api.entities.Guild;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Queue;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class PlayerManager {
     private final LavalinkClient client;
+    private final DiscordUtil discordUtil;
     public final Map<Long, GuildMusicManager> musicManagers = new HashMap<>();
 
-    public PlayerManager(LavalinkClient client) {
+    public PlayerManager(LavalinkClient client,DiscordUtil discordUtil) {
+        this.discordUtil=discordUtil;
         this.client = client;
     }
     private GuildMusicManager getOrCreateMusicManager(long guildId) {
@@ -38,7 +39,7 @@ public class PlayerManager {
     }
     public void loadAndPlay(@NotNull SlashCommandInteractionEvent event){
         // Construcción del URI
-        String linkOption = DiscordUtil
+        String linkOption = discordUtil
                 .buildMusicUri
                         (Objects.requireNonNull
                                 (event.getOption("link"),"Link cannot be null").getAsString());
@@ -75,10 +76,15 @@ public class PlayerManager {
         event.reply("Joining your channel!").queue();
     }
 
-    public Queue<Track> getQueue(SlashCommandInteractionEvent event) {
+    public List<SingleMusicInfo> getQueue(SlashCommandInteractionEvent event) {
         final var mngr = this.getOrCreateMusicManager(event.getGuild().getIdLong());
-        return mngr.scheduler.queue;
+        List<SingleMusicInfo> singleMusicInfoList = new ArrayList<>();
+         mngr.scheduler.queue
+                .forEach(track ->
+                        singleMusicInfoList
+                                .add(new SingleMusicInfo (track.getInfo().getTitle(),track.getInfo().getAuthor(),track.getInfo().getUri())) );
 
+        return singleMusicInfoList;
     }
 
     public boolean pausePlayback(SlashCommandInteractionEvent event) {

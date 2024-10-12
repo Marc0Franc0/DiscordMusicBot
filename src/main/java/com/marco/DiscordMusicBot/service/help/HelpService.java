@@ -15,8 +15,10 @@ import java.util.List;
 public class HelpService{
 
     private final List<ICommand> commandList;
+    private final EmbedUtil embedUtil;
     @Autowired
-    public HelpService(@Lazy List<ICommand> commandList) {
+    public HelpService(@Lazy List<ICommand> commandList,EmbedUtil embedUtil) {
+        this.embedUtil=embedUtil;
         this.commandList = commandList;
     }
 
@@ -30,7 +32,7 @@ public class HelpService{
     public String executeHelpCommand(SlashCommandInteractionEvent event) {
         try {
             //Se copntruye una respuesta
-            EmbedBuilder embedBuilder = EmbedUtil.buildCommandInfo(commandList);
+            EmbedBuilder embedBuilder = embedUtil.buildCommandInfo(commandList);
             event.replyEmbeds(embedBuilder.build())
                     .setEphemeral(true)
                     .queue();
