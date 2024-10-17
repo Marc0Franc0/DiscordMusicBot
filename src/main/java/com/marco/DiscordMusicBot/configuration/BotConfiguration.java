@@ -5,6 +5,7 @@ import com.marco.DiscordMusicBot.commands.CommandManager;
 import com.marco.DiscordMusicBot.commands.help.HelpCommand;
 import com.marco.DiscordMusicBot.commands.music.*;
 import com.marco.DiscordMusicBot.configuration.music.LavalinkClientManager;
+import com.marco.DiscordMusicBot.configuration.music.config.PlayerManager;
 import com.marco.DiscordMusicBot.service.CommandService;
 import com.marco.DiscordMusicBot.util.DiscordUtil;
 import com.marco.DiscordMusicBot.util.EmbedUtil;
@@ -51,7 +52,7 @@ public class BotConfiguration{
     @Bean
     public CommandManager commandManager() {
         CommandService commandService =
-                new CommandService(lavalinkClient(), initializeCommands(),embedUtil,discordUtil);
+                new CommandService(lavalinkClient(), initializeCommands(),embedUtil,discordUtil,playerManager());
         return new CommandManager(initializeCommands(), commandService);
     }
     /**
@@ -75,6 +76,10 @@ public class BotConfiguration{
             throw new RuntimeException(e.getMessage());
         }
         return jda;
+    }
+    @Bean
+    public PlayerManager playerManager(){
+        return new PlayerManager(lavalinkClient(),discordUtil);
     }
     @Bean
     public LavalinkClient lavalinkClient() {

@@ -1,6 +1,7 @@
 package com.marco.DiscordMusicBot.service;
 
 import com.marco.DiscordMusicBot.commands.ICommand;
+import com.marco.DiscordMusicBot.configuration.music.config.PlayerManager;
 import com.marco.DiscordMusicBot.service.help.HelpService;
 import com.marco.DiscordMusicBot.service.music.MusicServiceImpl;
 import com.marco.DiscordMusicBot.util.DiscordUtil;
@@ -23,8 +24,10 @@ public class CommandService{
     public CommandService(LavalinkClient lavalinkClient,
                           List<ICommand> commandList,
                           EmbedUtil embedUtil,
-                          DiscordUtil discordUtil) {
+                          DiscordUtil discordUtil,
+                          PlayerManager playerManager) {
         this.helpService = new HelpService(commandList,embedUtil);
+        this.musicService=new MusicServiceImpl(discordUtil,embedUtil,playerManager);
     }
 
     /**

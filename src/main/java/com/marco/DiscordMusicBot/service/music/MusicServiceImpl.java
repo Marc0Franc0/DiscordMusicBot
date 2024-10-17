@@ -1,27 +1,30 @@
 package com.marco.DiscordMusicBot.service.music;
 
-import com.marco.DiscordMusicBot.configuration.music.lavaplayer.PlayerManager;
+import com.marco.DiscordMusicBot.configuration.music.config.PlayerManager;
 import com.marco.DiscordMusicBot.model.music.SingleMusicInfo;
 import com.marco.DiscordMusicBot.util.DiscordUtil;
 import com.marco.DiscordMusicBot.util.EmbedUtil;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
+import dev.arbjerg.lavalink.protocol.v4.TrackInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.*;
-import java.util.concurrent.BlockingQueue;
+import java.util.List;
 
 @Service
 @Slf4j
-public class MusicServiceImpl implements MusicService {
+public class MusicServiceImpl implements MusicService{
 
     private final PlayerManager playerManager;
-
+    private final DiscordUtil discordUtil;
+    private final EmbedUtil embedUtil;
     @Autowired
-    public MusicServiceImpl(PlayerManager playerManager) {
+    public MusicServiceImpl(DiscordUtil discordUtil,
+                            EmbedUtil embedUtil,
+                            PlayerManager playerManager) {
+        this.discordUtil= discordUtil;
+        this.embedUtil = embedUtil;
         this.playerManager = playerManager;
     }
 
@@ -33,32 +36,21 @@ public class MusicServiceImpl implements MusicService {
      * @return A string indicating the result of the play command execution.
      * @throws RuntimeException If an error occurs during the execution of the play command.
      */
-    @Override
     public String executePlayCommand(SlashCommandInteractionEvent event) {
         String rtMethod = "Empty response";
         try {
             //verificaciones
             verifyEvent(event);
-
-            // Construcción del URI
-            String link = DiscordUtil
-                    .buildMusicUri
-                            (Objects.requireNonNull
-                                    (event.getOption("link"),"Link cannot be null").getAsString());
-
-            // Aplazar la respuesta para evitar la caducidad de la interacción
-            event.deferReply().queue();
-
             // Se intenta reproducir
-            playerManager.loadAndPlay(event, link);
-            // Se muestra una respuesta
-            rtMethod = "Play command executed successfully";
+            boolean isLoadAndPLay = playerManager.loadAndPlay(event);
+            rtMethod = isLoadAndPLay?"Playback started" : "Playback has not started";
+            event.reply(rtMethod).queue();
+            rtMethod = "play command executed successfully";
             log.info(rtMethod);
-
         } catch (Exception e) {
-            rtMethod = "Error in executePlayCommand";
-            log.error(rtMethod,":{}"+  e.getMessage());
-            event.reply("Failed to play the requested song").queue();
+            rtMethod = "Error in executePlayCommand:{}";
+            log.error(rtMethod,  e.getMessage());
+            event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());
         }
         return rtMethod;
@@ -79,16 +71,16 @@ public class MusicServiceImpl implements MusicService {
             verifyEvent(event);
 
             // Se obtiene la cola de reproducción y se construye una respuesta
-            BlockingQueue<AudioTrack> queue = playerManager.getQueue(event);
-            EmbedBuilder embedBuilder = EmbedUtil.buildMusicInfo(queue);
+            List<SingleMusicInfo> queue = playerManager.getQueue(event);
+            EmbedBuilder embedBuilder = embedUtil.buildMusicInfo(queue);
 
             // Se muestra una respuesta
             event.replyEmbeds(embedBuilder.build()).queue();
-            rtMethod = "Queue command executed successfully";
+            rtMethod = "queue command executed successfully";
             log.info(rtMethod);
 
         } catch (Exception e) {
-            rtMethod = "Error in executeQueueCommand";
+            rtMethod = "Error in executeQueueCommand:{}";
             log.error(rtMethod, e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());
@@ -124,12 +116,12 @@ public class MusicServiceImpl implements MusicService {
             // Se muestra una respuesta
             rtMethod = isPaused?"Pause playback" : "Playback not paused";
             event.reply(rtMethod).queue();
-            rtMethod = "Pause command executed successfully";
+            rtMethod = "pause command executed successfully";
             log.info(rtMethod);
 
         } catch (Exception e) {
-            rtMethod = "Error in executePauseCommand";
-            log.error(rtMethod, e.getMessage());
+            rtMethod = "Error in executePauseCommand:{}";
+            log.error(rtMethod,e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());
         }
@@ -164,11 +156,11 @@ public class MusicServiceImpl implements MusicService {
             rtMethod = isResumed?"Resume playback":"Playback not resumed";
             // Se muestra una respuesta
             event.reply(rtMethod).queue();
-            rtMethod = "Resume command executed successfully";
+            rtMethod = "resume command executed successfully";
             log.info(rtMethod);
 
         } catch (Exception e) {
-            rtMethod = "Error in executeResumeCommand";
+            rtMethod = "Error in executeResumeCommand:{}";
             log.error(rtMethod, e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());
@@ -195,12 +187,11 @@ public class MusicServiceImpl implements MusicService {
             rtMethod =deletedQueue?"Deleted queue":"Not deleted queue";
             // Se muestra una respuesta
             event.reply(rtMethod).queue();
-            rtMethod = "Clear command executed successfully";
+            rtMethod = "clear command executed successfully";
             log.info(rtMethod);
 
         } catch (Exception e) {
-            rtMethod = "Error in executeQueueCommand";
-            rtMethod = "Error in executeClearCommand";
+            rtMethod = "Error in executeClearCommand:{}";
             log.error(rtMethod, e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());
@@ -223,17 +214,12 @@ public class MusicServiceImpl implements MusicService {
             verifyEvent(event);
 
             //Se obtiene info de la canción actual y se contruye una respuesta
-            AudioTrackInfo audioTrackInfo = playerManager.getTrackInfo(event);
-            EmbedBuilder embedBuilder = new EmbedBuilder();
-            if(audioTrackInfo.title.equals("It is not playing")){
-                embedBuilder.setTitle(audioTrackInfo.title).setDescription("Unable to execute the command");
-            }else{
-                embedBuilder = EmbedUtil.buildMusicInfo(new SingleMusicInfo(
-                                                audioTrackInfo.title,
-                                                audioTrackInfo.author,
-                                                audioTrackInfo.uri));
-                embedBuilder.setTitle("Current track");
-            }
+            TrackInfo audioTrackInfo = playerManager.getTrackInfo(event);
+            EmbedBuilder embedBuilder =  embedUtil.buildMusicInfo(new SingleMusicInfo(
+                                                audioTrackInfo.getTitle(),
+                                                audioTrackInfo.getAuthor(),
+                                                audioTrackInfo.getUri()));
+            embedBuilder.setTitle("Current track");
 
             // Se muestra una respuesta
             event.replyEmbeds(embedBuilder.build()).queue();
@@ -241,16 +227,14 @@ public class MusicServiceImpl implements MusicService {
             log.info(rtMethod);
 
         } catch (Exception e) {
-            rtMethod = "Error in executeTrackInfoCommand";
+            rtMethod = "Error in executeTrackInfoCommand:{}";
             log.error(rtMethod, e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());
         }
         return rtMethod;
     }
-
-    /**
-     * Handles the execution of the /stop command in the Discord bot.
+    /** Handles the execution of the /stop command in the Discord bot.
      * This method stops the current music playback and provides an appropriate response to the user.
      *
      * @param event The SlashCommandInteractionEvent received from Discord. Contains information about the executed command and the context in which it was executed.
@@ -272,7 +256,7 @@ public class MusicServiceImpl implements MusicService {
             log.info(rtMethod);
 
         } catch (Exception e) {
-            rtMethod = "Error in executeStopCommand";
+            rtMethod = "Error in executeStopCommand:{}";
             log.error(rtMethod, e.getMessage());
             event.reply("An unexpected error occurred").queue();
             throw new RuntimeException(e.getMessage());
@@ -289,7 +273,6 @@ public class MusicServiceImpl implements MusicService {
      *   <li>{@link DiscordUtil#verifyMember(SlashCommandInteractionEvent)} - Verifies the member initiating the event.</li>
      *   <li>{@link DiscordUtil#verifyMemberVoiceState(SlashCommandInteractionEvent)} - Verifies the voice state of the member.</li>
      *   <li>{@link DiscordUtil#verifyGuild(SlashCommandInteractionEvent)} - Verifies the guild associated with the event.</li>
-     *   <li>{@link DiscordUtil#verifySelfVoiceState(SlashCommandInteractionEvent)} - Verifies the bot's own voice state.</li>
      * </ul>
      *
      * @param event the {@link SlashCommandInteractionEvent} to be verified.
@@ -297,9 +280,9 @@ public class MusicServiceImpl implements MusicService {
      */
     private void verifyEvent(SlashCommandInteractionEvent event){
         // Verificaciones
-        DiscordUtil.verifyMember(event);
-        DiscordUtil.verifyMemberVoiceState(event);
-        DiscordUtil.verifyGuild(event);
-        DiscordUtil.verifySelfVoiceState(event);
+        discordUtil.verifyMember(event);
+        discordUtil.verifyMemberVoiceState(event);
+        discordUtil.verifyGuild(event);
+        //DiscordUtil.verifySelfVoiceState(event);
     }
 }

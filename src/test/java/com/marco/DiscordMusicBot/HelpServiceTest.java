@@ -1,64 +1,68 @@
+
 package com.marco.DiscordMusicBot;
 
 import com.marco.DiscordMusicBot.commands.ICommand;
-import com.marco.DiscordMusicBot.configuration.music.lavaplayer.PlayerManager;
-import com.marco.DiscordMusicBot.service.CommandService;
 import com.marco.DiscordMusicBot.service.help.HelpService;
-import com.marco.DiscordMusicBot.service.music.MusicService;
-import com.marco.DiscordMusicBot.service.music.MusicServiceImpl;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
+import com.marco.DiscordMusicBot.util.EmbedUtil;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class HelpServiceTest {
+    @Mock
+    private HelpService helpService;
 
-
+    @BeforeEach
+    public void setUp() {
+        List<ICommand> commands = new ArrayList<>();
+        EmbedUtil embedUtil = new EmbedUtil();
+        helpService = new HelpService(commands,embedUtil);
+    }
    @Test
-    public void testExecuteHelpCommandWithoutMocks() {
-     // Objeto SlashCommandInteractionEvent usando Mockito para simular el comportamiento "ideal"
-        SlashCommandInteractionEvent idealEvent = mock(SlashCommandInteractionEvent.class);
+    public void testExecuteHelp_WithCommands() {
+
+        // event
+        SlashCommandInteractionEvent event = mock(SlashCommandInteractionEvent.class);
         ReplyCallbackAction replyActionIdealEvent = mock(ReplyCallbackAction.class);
         //properties
-        when(idealEvent.getName()).thenReturn("help");
-        when(idealEvent.replyEmbeds(any(MessageEmbed.class))).thenReturn(replyActionIdealEvent);
+        when(event.replyEmbeds(any(MessageEmbed.class))).thenReturn(replyActionIdealEvent);
         when(replyActionIdealEvent.setEphemeral(anyBoolean())).thenReturn(replyActionIdealEvent);
+        // método de prueba
+        String result = helpService.executeHelpCommand(event);
 
-        // Objeto SlashCommandInteractionEvent usando Mockito para simular el comportamiento "inesperado"
-        SlashCommandInteractionEvent unexpectedEvent = mock(SlashCommandInteractionEvent.class);
-        //properties
-        when(unexpectedEvent.getName()).thenReturn("unknown");
-       List<ICommand> commandList = new ArrayList<>();
-        //objeto HelpService
-        HelpService helpService = new HelpService(commandList);
-        //obj audioPlayerManager
-       AudioPlayerManager audioPlayerManager = new DefaultAudioPlayerManager();
-       //obj playerManager
-       PlayerManager playerManager = new PlayerManager(audioPlayerManager,true);
-        //obj musicService
-        MusicServiceImpl musicService = new MusicServiceImpl(playerManager);
-        // Objeto CommandService
-        CommandService commandService = new CommandService(helpService,musicService);
-        // Ejecución de el método selectExecute con el evento "ideal"
-        String resultIdealEvent = commandService.selectExecute(idealEvent);
-        // Ejecución de el método selectExecute con el evento "inesperado"
-        String resultUnexpectedEvent = commandService.selectExecute(unexpectedEvent);
-
-        // Verificación-> idealEvent
-        Assertions.assertEquals("Help command executed successfully", resultIdealEvent);
-        // Verificación-> unexpectedEvent
-       Assertions.assertEquals("Unknown command", resultUnexpectedEvent);
+        // Verificación
+        Assertions.assertEquals("Help command executed successfully", result);
     }
+    @Test
+    public void testExecuteHelp_WithException() {
+        // event
+        SlashCommandInteractionEvent event = mock(SlashCommandInteractionEvent.class);
+        String exceptionTxt="Test Exception";
+        ReplyCallbackAction replyActionIdealEvent = mock(ReplyCallbackAction.class);
+        //properties
+        when(event.replyEmbeds(any(MessageEmbed.class))).thenReturn(replyActionIdealEvent);
+        when(replyActionIdealEvent.setEphemeral(anyBoolean())).thenReturn(replyActionIdealEvent);
+        when(helpService.executeHelpCommand(event)).thenThrow(new RuntimeException(exceptionTxt));
 
+        // Verificar que se lanza la excepción y que se maneja correctamente
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            helpService.executeHelpCommand(event);
+        });
+
+        // Verificación
+        assertEquals("Error processing help command: "+exceptionTxt, exception.getMessage());
+    }
 }

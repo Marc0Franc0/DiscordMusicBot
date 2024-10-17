@@ -11,9 +11,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.jetbrains.annotations.NotNull;
 import net.dv8tion.jda.api.entities.Guild;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class PlayerManager {
@@ -37,7 +35,9 @@ public class PlayerManager {
             return mng;
         }
     }
-    public void loadAndPlay(@NotNull SlashCommandInteractionEvent event){
+    public boolean loadAndPlay(@NotNull SlashCommandInteractionEvent event){
+      var rt=false;
+       try{
         // Construcción del URI
         String linkOption = discordUtil
                 .buildMusicUri
@@ -50,9 +50,16 @@ public class PlayerManager {
         final var mngr = this.getOrCreateMusicManager(guildId);
 
         link.loadItem(linkOption).subscribe(new AudioLoader(event, mngr));
+        rt=true;
+       }catch (Exception e){
+           log.error("Exception:{}",e.getMessage());
+           throw new RuntimeException(e.getMessage());
+       }
+       return rt;
     }
 
     private void verifyVoiceState(SlashCommandInteractionEvent event) {
+       try{
         // We are already connected, go ahead and play
         if (event.getGuild().getSelfMember().getVoiceState().inAudioChannel()) {
             event.deferReply(false).queue();
@@ -60,10 +67,15 @@ public class PlayerManager {
             // Connect to VC first
             joinHelper(event);
         }
+         }catch (Exception e){
+           log.error("Exception:{}",e.getMessage());
+           throw new RuntimeException(e.getMessage());
+    }
     }
 
     // Makes sure that the bot is in a voice channel!
     private void joinHelper(SlashCommandInteractionEvent event) {
+        try{
         final Member member = event.getMember();
         final GuildVoiceState memberVoiceState = member.getVoiceState();
 
@@ -74,10 +86,15 @@ public class PlayerManager {
         this.getOrCreateMusicManager(member.getGuild().getIdLong());
 
         event.reply("Joining your channel!").queue();
+        }catch (Exception e){
+            log.error("Exception:{}",e.getMessage());
+            throw new RuntimeException(e.getMessage());
+    }
     }
 
     public List<SingleMusicInfo> getQueue(SlashCommandInteractionEvent event) {
         final var mngr = this.getOrCreateMusicManager(event.getGuild().getIdLong());
+        try{
         List<SingleMusicInfo> singleMusicInfoList = new ArrayList<>();
          mngr.scheduler.queue
                 .forEach(track ->
@@ -85,6 +102,10 @@ public class PlayerManager {
                                 .add(new SingleMusicInfo (track.getInfo().getTitle(),track.getInfo().getAuthor(),track.getInfo().getUri())) );
 
         return singleMusicInfoList;
+       }catch (Exception e){
+        log.error("Exception:{}",e.getMessage());
+        throw new RuntimeException(e.getMessage());
+    }
     }
 
     public boolean pausePlayback(SlashCommandInteractionEvent event) {
@@ -95,6 +116,7 @@ public class PlayerManager {
             rt= true;
         }
         catch (Exception e){
+            log.error("Exception:{}",e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
         return rt;
@@ -119,6 +141,7 @@ public class PlayerManager {
             rt= true;
         }
         catch (Exception e){
+            log.error("Exception:{}",e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
         return rt;
@@ -132,6 +155,7 @@ public class PlayerManager {
             rt= true;
         }
         catch (Exception e){
+            log.error("Exception:{}",e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
         return rt;
@@ -145,6 +169,7 @@ public class PlayerManager {
             rt= true;
         }
         catch (Exception e){
+            log.error("Exception:{}",e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
         return rt;
